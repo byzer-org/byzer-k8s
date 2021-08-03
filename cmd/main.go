@@ -29,6 +29,30 @@ func globalFlags() []cli.Flag {
 	}
 }
 
+/**
+mlsql-deploy \
+--kube-config /tmp/.. \
+
+--engine-name xxxx   \
+--engine-image xxxx   \
+--engine-executor-core-num xxxx   \
+--engine-executor-num xxxx   \
+--engine-executor-memory xxxx \
+
+--engine-driver-core-num xxxx   \
+--engine-driver-memory xxxx \
+
+
+--engine-access-token xxxx   \
+--engine-jar-path-in-container xxxx   \
+
+
+--storage-name  xxxx \
+--storage-meta-url  xxxxx \
+--storage-mount-point  xxxx \
+--storage-access-key xxxx     \
+--storage-secretKey  xxxx
+*/
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
 		Name: "version", Aliases: []string{"V"},
