@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+    <property>
+        <name>fs.defaultFS</name>
+        <value>oss://{{.OSSBucket}}</value>
+    </property>
+    
+    <property>
+        <name>fs.oss.endpoint</name>
+        <value>oss-cn-hangzhou-internal.aliyuncs.com</value>
+        <description>Aliyun OSS endpoint to connect to. </description>
+    </property>
+    <property>
+        <name>fs.oss.accessKeyId</name>
+        <value>{{.AccessKeyID}}</value>
+        <description>Aliyun access key ID</description>
+    </property>
+
+    <property>
+        <name>fs.oss.accessKeySecret</name>
+        <value>{{.AccessKeySecret}}</value>
+        <description>Aliyun access key secret</description>
+    </property>
+    <property>
+        <name>fs.oss.impl</name>
+        <value>org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem</value>
+    </property>
+    <property>
+        <name>fs.oss.buffer.dir</name>
+        <value>/tmp/oss</value>
+    </property>
+</configuration>

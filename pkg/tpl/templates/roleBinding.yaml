@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: amdin-role-binding
+  labels:
+    from: admin-role
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
