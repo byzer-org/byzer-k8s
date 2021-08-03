@@ -61,7 +61,7 @@ func main() {
 
 	app := cli.App{
 		Name:                 "mlsql-deploy",
-		Usage:                "Cli to deploy mlsql engine in K8s",
+		Usage:                "Cli to deploy MLSQL Engine in K8s",
 		Version:              version.Version(),
 		Copyright:            "Apache V2",
 		EnableBashCompletion: true,
