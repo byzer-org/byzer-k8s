@@ -30,7 +30,7 @@ func globalFlags() []cli.Flag {
 }
 
 /**
-mlsql-deploy \
+mlsql-deploy run \
 --kube-config /tmp/.. \
 
 --engine-name xxxx   \
@@ -51,7 +51,8 @@ mlsql-deploy \
 --storage-meta-url  xxxxx \
 --storage-mount-point  xxxx \
 --storage-access-key xxxx     \
---storage-secretKey  xxxx
+--storage-secret-key  xxxx \
+k8s
 */
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -67,7 +68,7 @@ func main() {
 		EnableBashCompletion: true,
 		Flags:                globalFlags(),
 		Commands: []*cli.Command{
-
+			runFlags(),
 		},
 	}
 
