@@ -7,7 +7,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{.Name}
+      app: {{.Name}}
   strategy:
     rollingUpdate:
       maxUnavailable: 0
@@ -65,7 +65,7 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP          
-        image: '{{.Image}'
+        image: '{{.Image}}'
         imagePullPolicy: Always
         volumeMounts:
         - name: spark-conf
