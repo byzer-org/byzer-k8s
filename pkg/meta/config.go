@@ -1,5 +1,11 @@
 package meta
 
+type MetaConfig struct {
+	K8sConfig     K8sConfig
+	EngineConfig  EngineConfig
+	StorageConfig StorageConfig
+}
+
 type K8sConfig struct {
 	KubeConfig string
 }
@@ -7,15 +13,16 @@ type EngineConfig struct {
 	Name  string
 	Image string
 
-	ExecutorCoreNum int32
-	ExecutorNum     int32
-	ExecutorMemory  int32
+	ExecutorCoreNum int64
+	ExecutorNum     int64
+	ExecutorMemory  int64
 
-	DriverCoreNum int32
-	DriverMemory  int32
+	DriverCoreNum int64
+	DriverMemory  int64
 
 	AccessToken        string
 	JarPathInContainer string
+	SparkConfig        map[string]string
 }
 
 type StorageConfig struct {

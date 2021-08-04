@@ -1,11 +1,48 @@
 package main
 
 import (
+	"fmt"
 	"github.com/urfave/cli/v2"
+	"io/fs"
+	"mlsql.tech/allwefantasy/deploy/pkg/meta"
+	"os"
 )
 
 func run(c *cli.Context) error {
+	engineConfig := meta.EngineConfig{
+		Name:               c.String("engine-name"),
+		Image:              c.String("engine-image"),
+		ExecutorCoreNum:    c.Int64("engine-executor-core-num"),
+		ExecutorNum:        c.Int64("engine-executor-num"),
+		ExecutorMemory:     c.Int64("engine-executor-memory"),
+		DriverCoreNum:      c.Int64("engine-driver-core-num"),
+		DriverMemory:       c.Int64("engine-driver-memory"),
+		AccessToken:        c.String("engine-access-token"),
+		JarPathInContainer: c.String("engine-jar-path-in-container"),
+	}
 
+	kubeConfigPath := c.String("kube-config")
+	b, _ := fs.ReadFile(os.DirFS("/"), kubeConfigPath)
+	k8sConfig := meta.K8sConfig{KubeConfig: string(b)}
+
+	var storageConfig meta.StorageConfig
+	if c.IsSet("storage-name") {
+		storageConfig = meta.StorageConfig{
+			Name:       c.String("storage-name"),
+			MetaUrl:    c.String("storage-meta-url"),
+			MountPoint: c.String("storage-mount-point"),
+			AccessKey:  c.String("storage-access-key"),
+			SecretKey:  c.String("storage-secret-key"),
+		}
+	}
+
+	metaConfig := meta.MetaConfig{
+		K8sConfig:     k8sConfig,
+		EngineConfig:  engineConfig,
+		StorageConfig: storageConfig,
+	}
+
+	fmt.Printf("config: %v", metaConfig)
 	return nil
 }
 
