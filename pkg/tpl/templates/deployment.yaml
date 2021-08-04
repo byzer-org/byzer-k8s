@@ -27,7 +27,7 @@ spec:
           - >-
             echo "/opt/spark/bin/spark-submit --master k8s://https://{{.K8sAddress}}
             --deploy-mode client    
-            --executor-memory {{.ExecutorMemory}} 
+            --executor-memory {{.ExecutorMemory}}m
             --executor-cores {{.ExecutorCoreNum}}
             --class streaming.core.StreamingApp 
             --conf spark.kubernetes.container.image={{.Image}}
@@ -73,7 +73,7 @@ spec:
         resources:
           limits:
             cpu: {{.DriverCoreNum}}
-            memory: {{.DriverMemory}}
+            memory: {{.DriverMemory}}m
           requests:
             cpu: {{.DriverCoreNum}}
-            memory: {{.DriverMemory}}
+            memory: {{.DriverMemory}}m
