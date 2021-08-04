@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations: {}
-  name: {{.Name}
+  name: {{.Name}}
   namespace: default
 spec:
   selector:
@@ -15,14 +15,14 @@ spec:
   template:
     metadata:
       labels:
-        app: {{.Name}
+        app: {{.Name}}
     spec:
       volumes:
          - name: spark-conf
            configMap:                
               name: core-site-xml
       containers:
-      - name: {{.Name}
+      - name: {{.Name}}
         args:
           - >-
             echo "/opt/spark/bin/spark-submit --master k8s://https://{{.K8sAddress}}
