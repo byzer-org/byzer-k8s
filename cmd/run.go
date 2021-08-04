@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-const (
-	SVC_NAME = "spark-mlsql-2-0-1-3-0-0"
-)
-
 func run(c *cli.Context) error {
 	engineConfig := meta.EngineConfig{
 		Name:               c.String("engine-name"),
@@ -102,7 +98,7 @@ func run(c *cli.Context) error {
 	}
 
 	// Step4: Expose MLSQL Engine service
-	_, serviceErr := executor.CreateExpose([]string{"deployment", SVC_NAME, "--port", "9003",
+	_, serviceErr := executor.CreateExpose([]string{"deployment", metaConfig.EngineConfig.Name, "--port", "9003",
 		"--target-port", "9003", "--type", "LoadBalancer"})
 	if serviceErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to expose service \n %s", serviceErr.Error()))

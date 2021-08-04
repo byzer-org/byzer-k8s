@@ -64,7 +64,7 @@ func main() {
 		Name:                 "mlsql-deploy",
 		Usage:                "Cli to deploy MLSQL Engine in K8s",
 		Version:              version.Version(),
-		Copyright:            "Apache V2",
+		Copyright:            "Apache License V2",
 		EnableBashCompletion: true,
 		Flags:                globalFlags(),
 		Commands: []*cli.Command{
