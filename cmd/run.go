@@ -1,11 +1,19 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"io/fs"
 	"mlsql.tech/allwefantasy/deploy/pkg/meta"
+	"mlsql.tech/allwefantasy/deploy/pkg/tpl"
+	"mlsql.tech/allwefantasy/deploy/pkg/utils"
 	"os"
+	"time"
+)
+
+const (
+	SVC_NAME = "spark-mlsql-2-0-1-3-0-0"
 )
 
 func run(c *cli.Context) error {
@@ -42,7 +50,69 @@ func run(c *cli.Context) error {
 		StorageConfig: storageConfig,
 	}
 
-	fmt.Printf("config: %v", metaConfig)
+	logger.Trace("User config: %v", metaConfig)
+
+	executor := utils.CreateKubeExecutor(&metaConfig.K8sConfig)
+
+	tplEvt := func(templateStr string, data interface{}) (*os.File, error) {
+		f, _ := utils.CreateTmpFile(tpl.EvaluateTemplate(templateStr, data))
+		return f, nil
+	}
+
+	// Step1: configure CM, so we can support JuiceFS FileSystem
+	coreSiteTmpFile, _ := tplEvt(tpl.TLPCoreSite, metaConfig.StorageConfig)
+	defer os.Remove(coreSiteTmpFile.Name())
+	_, coreSiteTmpErr := executor.CreateCM([]string{"core-site-xml", "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
+	if coreSiteTmpErr != nil {
+		logger.Fatalf("Fail to create core-site-xml in cm \n %s", coreSiteTmpErr.Error())
+		return coreSiteTmpErr
+	}
+
+	// Step2: Add role and service count in k8s
+	createRoleTmpFile, _ := tplEvt(tpl.TLPCreateRole, tpl.Empty{})
+	defer os.Remove(createRoleTmpFile.Name())
+	_, createRoleErr := executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})
+	if createRoleErr != nil {
+		error := errors.New(fmt.Sprintf("Fail to apply createRole.yaml \n %s", createRoleErr.Error()))
+		return error
+	}
+
+	bindRoleTmpFile, _ := tplEvt(tpl.TLPRoleBinding, tpl.Empty{})
+	defer os.Remove(bindRoleTmpFile.Name())
+	_, bindRoleErr := executor.CreateDeployment([]string{"-f", bindRoleTmpFile.Name(), "-o", "json"})
+	if bindRoleErr != nil {
+		error := errors.New(fmt.Sprintf("Fail to apply roleBinding.yaml \n %s", bindRoleErr.Error()))
+		return error
+	}
+
+	// Step3: Deploy MLSQL Engine
+	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, tpl.Empty{})
+	defer os.Remove(deployTmpFile.Name())
+	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
+	if deployErr != nil {
+		error := errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
+		return error
+	}
+
+	// Step4: Expose MLSQL Engine service
+	_, serviceErr := executor.CreateExpose([]string{"deployment", SVC_NAME, "--port", "9003",
+		"--target-port", "9003", "--type", "LoadBalancer"})
+	if serviceErr != nil {
+		error := errors.New(fmt.Sprintf("Fail to expose service \n %s", serviceErr.Error()))
+		return error
+	}
+
+	// Step5: Wait MLSQL Engine proxy service IP ready
+	var ip, _ = executor.GetProxyIp()
+	var counter int32 = 30
+	for ip == "" && counter > 0 {
+		time.Sleep(3 * time.Second)
+		logger.Infof("Wait load balance ip ready...")
+		counter -= 3
+		ip, _ = executor.GetProxyIp()
+	}
+
+	logger.Infof("MLSQL Engine is ready: http://%s:%s", ip, "9003")
 	return nil
 }
 

@@ -3,7 +3,10 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/jmoiron/jsonq"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubectl/pkg/cmd/apply"
@@ -27,6 +30,15 @@ func CreateTmpFile(content string) (*os.File, error) {
 		return nil, fmt.Errorf("Fail to create tmp file [%s] ", tmpfileName)
 	}
 	return tmpfile, nil
+}
+
+func BuildJsonQueryFromStr(jsonStr string) *jsonq.JsonQuery {
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(strings.NewReader(jsonStr))
+	dec.Decode(&data)
+	jq := jsonq.NewQuery(data)
+	return jq
+
 }
 
 type KubeExecutor struct {
@@ -116,7 +128,7 @@ func (executor *KubeExecutor) newCreateCM(ioStreams genericclioptions.IOStreams)
 	return cmd
 }
 
-func (executor *KubeExecutor) CreateDeployment(command []string, kubeConfigStr string) (string, error) {
+func (executor *KubeExecutor) CreateDeployment(command []string) (string, error) {
 
 	create := func(objs ...interface{}) *cobra.Command {
 		c := executor.newCmdApply(objs[2].(genericclioptions.IOStreams))
@@ -126,7 +138,24 @@ func (executor *KubeExecutor) CreateDeployment(command []string, kubeConfigStr s
 	return executor.setupCommand(create)
 }
 
-func (executor *KubeExecutor) CreateExpose(command []string, kubeConfigStr string) (string, error) {
+func (executor *KubeExecutor) GetProxyIp() (string, error) {
+	command := []string{"svc", "-o", "json"}
+	infoJson, getError := executor.GetInfo(command)
+
+	if getError != nil {
+		error := errors.New(fmt.Sprintf("fail to get service \n %s", getError.Error()))
+		return "", error
+	}
+	query := BuildJsonQueryFromStr(infoJson)
+	ip, ipError := query.String("items", "1", "status", "loadBalancer", "ingress", "0", "ip")
+	if ipError != nil {
+		error := errors.New(fmt.Sprintf("fail to get ip from service \n %s", ipError.Error()))
+		return "", error
+	}
+	return ip, nil
+}
+
+func (executor *KubeExecutor) CreateExpose(command []string) (string, error) {
 
 	create := func(objs ...interface{}) *cobra.Command {
 		c := executor.newExposeService(objs[2].(genericclioptions.IOStreams))
