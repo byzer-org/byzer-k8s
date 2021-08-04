@@ -138,6 +138,10 @@ func (executor *KubeExecutor) CreateDeployment(command []string) (string, error)
 	return executor.setupCommand(create)
 }
 
+func (executor *KubeExecutor) GetK8sAddress() string {
+	return strings.Split(strings.Split(executor.kubeConfig.KubeConfig, "\n")[4], "//")[1]
+}
+
 func (executor *KubeExecutor) GetProxyIp() (string, error) {
 	command := []string{"svc", "-o", "json"}
 	infoJson, getError := executor.GetInfo(command)

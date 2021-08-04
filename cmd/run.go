@@ -86,7 +86,14 @@ func run(c *cli.Context) error {
 	}
 
 	// Step3: Deploy MLSQL Engine
-	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, tpl.Empty{})
+	de := struct {
+		meta.EngineConfig
+		K8sAddress string
+	}{
+		EngineConfig: meta.EngineConfig{},
+		K8sAddress:   executor.GetK8sAddress()}
+
+	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, de)
 	defer os.Remove(deployTmpFile.Name())
 	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 	if deployErr != nil {

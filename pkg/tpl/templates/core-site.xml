@@ -2,34 +2,28 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
 <configuration>
-
     <property>
-        <name>fs.defaultFS</name>
-        <value>oss://{{.OSSBucket}}</value>
-    </property>
-    
-    <property>
-        <name>fs.oss.endpoint</name>
-        <value>oss-cn-hangzhou-internal.aliyuncs.com</value>
-        <description>Aliyun OSS endpoint to connect to. </description>
+        <name>fs.jfs.impl</name>
+        <value>io.juicefs.JuiceFileSystem</value>
     </property>
     <property>
-        <name>fs.oss.accessKeyId</name>
-        <value>{{.AccessKeyID}}</value>
-        <description>Aliyun access key ID</description>
-    </property>
-
-    <property>
-        <name>fs.oss.accessKeySecret</name>
-        <value>{{.AccessKeySecret}}</value>
-        <description>Aliyun access key secret</description>
+        <name>fs.AbstractFileSystem.jfs.impl</name>
+        <value>io.juicefs.JuiceFS</value>
     </property>
     <property>
-        <name>fs.oss.impl</name>
-        <value>org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem</value>
+        <name>juicefs.meta</name>
+        <value>{{.MetaUrl}}</value>
     </property>
     <property>
-        <name>fs.oss.buffer.dir</name>
-        <value>/tmp/oss</value>
+        <name>juicefs.cache-dir</name>
+        <value>/tmp/jfs</value>
+    </property>
+    <property>
+        <name>juicefs.cache-size</name>
+        <value>1024</value>
+    </property>
+    <property>
+        <name>juicefs.access-log</name>
+        <value>/tmp/juicefs.access.log</value>
     </property>
 </configuration>
