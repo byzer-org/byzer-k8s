@@ -19,6 +19,9 @@ Use [juicefs](https://github.com/juicedata/juicefs) to create a file system, her
 You can download the juicefs tool from [JuiceFS 0.15.2](https://github.com/juicedata/juicefs/releases/tag/v0.15.2)
 
 Step1: If needs, create a new JuiceFS FileSystem, so we can visit any object store.
+
+> Note: please replace the `file` storage with hdfs/object store. 
+
 ```shell
 ./juicefs format \
 	--storage file \
