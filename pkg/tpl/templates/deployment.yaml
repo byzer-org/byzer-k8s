@@ -2,12 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations: {}
-  name: {{.Name}}
+  name: {{.EngineConfig.Name}}
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: {{.Name}}
+      app: {{.EngineConfig.Name}}
   strategy:
     rollingUpdate:
       maxUnavailable: 0
@@ -15,28 +15,30 @@ spec:
   template:
     metadata:
       labels:
-        app: {{.Name}}
+        app: {{.EngineConfig.Name}}
     spec:
       volumes:
          - name: spark-conf
            configMap:                
               name: core-site-xml
       containers:
-      - name: {{.Name}}
+      - name: {{.EngineConfig.Name}}
         args:
           - >-
             echo "/opt/spark/bin/spark-submit --master k8s://https://{{.K8sAddress}}
-            --deploy-mode client    
-            --executor-memory {{.ExecutorMemory}}m
-            --executor-cores {{.ExecutorCoreNum}}
+            --deploy-mode client
+            --driver-memory {{.EngineConfig.DriverMemory}}m
+            --driver-cores  {{.EngineConfig.DriverCoreNum}}
+            --executor-memory {{.EngineConfig.ExecutorMemory}}m
+            --executor-cores {{.EngineConfig.ExecutorCoreNum}}
             --driver-library-path "local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar"
             --class streaming.core.StreamingApp
-            --conf spark.kubernetes.container.image={{.Image}}
+            --conf spark.kubernetes.container.image={{.EngineConfig.Image}}
             --conf spark.kubernetes.container.image.pullPolicy=Always 
             --conf spark.kubernetes.namespace=default                           
-            --conf spark.kubernetes.executor.request.cores={{.ExecutorCoreNum}}   
-            --conf spark.kubernetes.executor.limit.cores={{.ExecutorCoreNum}}                       
-            --conf spark.executor.instances={{.ExecutorNum}} 
+            --conf spark.kubernetes.executor.request.cores={{.EngineConfig.ExecutorCoreNum}}
+            --conf spark.kubernetes.executor.limit.cores={{.EngineConfig.ExecutorCoreNum}}
+            --conf spark.executor.instances={{.EngineConfig.ExecutorNum}}
             --conf spark.driver.host=$POD_IP 
             --conf spark.sql.cbo.enabled=true 
             --conf spark.sql.adaptive.enabled=true 
@@ -46,12 +48,12 @@ spec:
             --conf spark.driver.maxResultSize=2g
             --conf spark.serializer=org.apache.spark.serializer.KryoSerializer 
             --conf spark.kryoserializer.buffer.max=200m
-            --conf spark.mlsql.auth.access_token={{.AccessToken}}
+            --conf spark.mlsql.auth.access_token={{.EngineConfig.AccessToken}}
             --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""  
             --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
             --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar\""
-            {{.JarPathInContainer}}
-            -streaming.name {{.Name}}
+            {{.EngineConfig.JarPathInContainer}}
+            -streaming.name {{.EngineConfig.Name}}
             -streaming.rest true 
             -streaming.thrift false 
             -streaming.platform spark 
@@ -67,15 +69,15 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP          
-        image: '{{.Image}}'
+        image: '{{.EngineConfig.Image}}'
         imagePullPolicy: Always
         volumeMounts:
         - name: spark-conf
-          mountPath: /opt/spark/conf/
+          mountPath: /work/spark-3.1.1-bin-hadoop3.2/conf
         resources:
           limits:
-            cpu: {{.DriverCoreNum}}
-            memory: {{.DriverMemory}}m
+            cpu: {{.EngineConfig.DriverCoreNum+2}}
+            memory: {{.EngineConfig.DriverMemory+1024}}m
           requests:
-            cpu: {{.DriverCoreNum}}
-            memory: {{.DriverMemory}}m
+            cpu: {{.EngineConfig.DriverCoreNum}}
+            memory: {{.EngineConfig.DriverMemory}}m

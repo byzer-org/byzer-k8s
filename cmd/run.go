@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
-	"io/fs"
+	"io/ioutil"
 	"mlsql.tech/allwefantasy/deploy/pkg/meta"
 	"mlsql.tech/allwefantasy/deploy/pkg/tpl"
 	"mlsql.tech/allwefantasy/deploy/pkg/utils"
@@ -26,7 +26,11 @@ func run(c *cli.Context) error {
 	}
 
 	kubeConfigPath := c.String("kube-config")
-	b, _ := fs.ReadFile(os.DirFS("/"), kubeConfigPath)
+	b, err := ioutil.ReadFile(kubeConfigPath)
+	if err != nil {
+		logger.Fatalf("load kube config file from %s: %s", kubeConfigPath, err)
+		return nil
+	}
 	k8sConfig := meta.K8sConfig{KubeConfig: string(b)}
 
 	var storageConfig meta.StorageConfig
@@ -46,8 +50,6 @@ func run(c *cli.Context) error {
 		StorageConfig: storageConfig,
 	}
 
-	logger.Trace("User config: %v", metaConfig)
-
 	executor := utils.CreateKubeExecutor(&metaConfig.K8sConfig)
 
 	tplEvt := func(templateStr string, data interface{}) (*os.File, error) {
@@ -56,6 +58,7 @@ func run(c *cli.Context) error {
 	}
 
 	// Step1: configure CM, so we can support JuiceFS FileSystem
+	executor.DeleteAny([]string{"configmap","core-site-xml"})
 	coreSiteTmpFile, _ := tplEvt(tpl.TLPCoreSite, metaConfig.StorageConfig)
 	defer os.Remove(coreSiteTmpFile.Name())
 	_, coreSiteTmpErr := executor.CreateCM([]string{"core-site-xml", "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
@@ -83,14 +86,14 @@ func run(c *cli.Context) error {
 
 	// Step3: Deploy MLSQL Engine
 	de := struct {
-		meta.EngineConfig
+		*meta.EngineConfig
 		K8sAddress string
 	}{
-		EngineConfig: meta.EngineConfig{},
+		EngineConfig: &metaConfig.EngineConfig,
 		K8sAddress:   executor.GetK8sAddress()}
 
 	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, de)
-	defer os.Remove(deployTmpFile.Name())
+	// defer os.Remove(deployTmpFile.Name())
 	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 	if deployErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
