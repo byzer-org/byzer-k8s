@@ -58,7 +58,7 @@ func run(c *cli.Context) error {
 	}
 
 	// Step1: configure CM, so we can support JuiceFS FileSystem
-	executor.DeleteAny([]string{"configmap","core-site-xml"})
+	executor.DeleteAny([]string{"configmap", "core-site-xml"})
 	coreSiteTmpFile, _ := tplEvt(tpl.TLPCoreSite, metaConfig.StorageConfig)
 	defer os.Remove(coreSiteTmpFile.Name())
 	_, coreSiteTmpErr := executor.CreateCM([]string{"core-site-xml", "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
@@ -87,13 +87,18 @@ func run(c *cli.Context) error {
 	// Step3: Deploy MLSQL Engine
 	de := struct {
 		*meta.EngineConfig
-		K8sAddress string
+		K8sAddress         string
+		LimitDriverCoreNum int64
+		LimitDriverMemory  int64
 	}{
-		EngineConfig: &metaConfig.EngineConfig,
-		K8sAddress:   executor.GetK8sAddress()}
+		EngineConfig:       &metaConfig.EngineConfig,
+		K8sAddress:         executor.GetK8sAddress(),
+		LimitDriverCoreNum: metaConfig.EngineConfig.DriverCoreNum * 2,
+		LimitDriverMemory:  metaConfig.EngineConfig.DriverMemory * 2,
+	}
 
 	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, de)
-	defer os.Remove(deployTmpFile.Name())
+	// defer os.Remove(deployTmpFile.Name())
 	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 	if deployErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))

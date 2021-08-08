@@ -19,7 +19,7 @@ spec:
     spec:
       volumes:
          - name: spark-conf
-           configMap:                
+           configMap:
               name: core-site-xml
       containers:
       - name: {{.EngineConfig.Name}}
@@ -31,35 +31,35 @@ spec:
             --driver-cores  {{.EngineConfig.DriverCoreNum}}
             --executor-memory {{.EngineConfig.ExecutorMemory}}m
             --executor-cores {{.EngineConfig.ExecutorCoreNum}}
-            --driver-library-path "local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar"
+            --driver-library-path "local:///home/deploy/mlsql/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/mlsql/libs/ansj_seg-5.1.6.jar:local:///home/deploy/mlsql/libs/nlp-lang-1.7.8.jar"
             --class streaming.core.StreamingApp
             --conf spark.kubernetes.container.image={{.EngineConfig.Image}}
-            --conf spark.kubernetes.container.image.pullPolicy=Always 
-            --conf spark.kubernetes.namespace=default                           
+            --conf spark.kubernetes.container.image.pullPolicy=Always
+            --conf spark.kubernetes.namespace=default
             --conf spark.kubernetes.executor.request.cores={{.EngineConfig.ExecutorCoreNum}}
             --conf spark.kubernetes.executor.limit.cores={{.EngineConfig.ExecutorCoreNum}}
             --conf spark.executor.instances={{.EngineConfig.ExecutorNum}}
-            --conf spark.driver.host=$POD_IP 
-            --conf spark.sql.cbo.enabled=true 
-            --conf spark.sql.adaptive.enabled=true 
-            --conf spark.sql.cbo.joinReorder.enabled=true 
-            --conf spark.sql.cbo.planStats.enabled=true 
-            --conf spark.sql.cbo.starSchemaDetection=true 
+            --conf spark.driver.host=$POD_IP
+            --conf spark.sql.cbo.enabled=true
+            --conf spark.sql.adaptive.enabled=true
+            --conf spark.sql.cbo.joinReorder.enabled=true
+            --conf spark.sql.cbo.planStats.enabled=true
+            --conf spark.sql.cbo.starSchemaDetection=true
             --conf spark.driver.maxResultSize=2g
-            --conf spark.serializer=org.apache.spark.serializer.KryoSerializer 
+            --conf spark.serializer=org.apache.spark.serializer.KryoSerializer
             --conf spark.kryoserializer.buffer.max=200m
             --conf spark.mlsql.auth.access_token={{.EngineConfig.AccessToken}}
-            --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""  
+            --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
             --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
-            --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar\""
+            --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/mlsql/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/mlsql/libs/ansj_seg-5.1.6.jar:local:///home/deploy/mlsql/libs/nlp-lang-1.7.8.jar\""
             {{.EngineConfig.JarPathInContainer}}
             -streaming.name {{.EngineConfig.Name}}
-            -streaming.rest true 
-            -streaming.thrift false 
-            -streaming.platform spark 
-            -streaming.enableHiveSupport true 
-            -streaming.spark.service true 
-            -streaming.job.cancel true             
+            -streaming.rest true
+            -streaming.thrift false
+            -streaming.platform spark
+            -streaming.enableHiveSupport true
+            -streaming.spark.service true
+            -streaming.job.cancel true
             -streaming.driver.port 9003" | bash
         command:
           - /bin/sh
@@ -68,7 +68,7 @@ spec:
           - name: POD_IP
             valueFrom:
               fieldRef:
-                fieldPath: status.podIP          
+                fieldPath: status.podIP
         image: '{{.EngineConfig.Image}}'
         imagePullPolicy: Always
         volumeMounts:
@@ -76,8 +76,8 @@ spec:
           mountPath: /work/spark-3.1.1-bin-hadoop3.2/conf
         resources:
           limits:
-            cpu: {{.EngineConfig.DriverCoreNum+2}}
-            memory: {{.EngineConfig.DriverMemory+1024}}m
+            cpu: {{.LimitDriverCoreNum}}
+            memory: {{.LimitDriverMemory}}Mi
           requests:
             cpu: {{.EngineConfig.DriverCoreNum}}
-            memory: {{.EngineConfig.DriverMemory}}m
+            memory: {{.EngineConfig.DriverMemory}}Mi
