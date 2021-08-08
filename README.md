@@ -18,6 +18,7 @@ make all
 Use [juicefs](https://github.com/juicedata/juicefs) to create a file system, here we use Redis as meta storage.
 You can download the juicefs tool from [JuiceFS 0.15.2](https://github.com/juicedata/juicefs/releases/tag/v0.15.2)
 
+Step1: If needs, create a new JuiceFS FileSystem, so we can visit any object store.
 ```shell
 ./juicefs format \
 	--storage file \
@@ -26,6 +27,7 @@ You can download the juicefs tool from [JuiceFS 0.15.2](https://github.com/juice
 	mlsql-k8s-storage
 ```
 
+Step2: Run MLSQL Engine in K8s cluster.
 
 ```shell
 ./mlsql-deploy run \
@@ -42,3 +44,5 @@ You can download the juicefs tool from [JuiceFS 0.15.2](https://github.com/juice
 --storage-name  mlsql-k8s-storage \
 --storage-meta-url  redis://192.168.31.95:6379/1
 ```
+
+Done.
