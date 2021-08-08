@@ -29,7 +29,8 @@ spec:
             --deploy-mode client    
             --executor-memory {{.ExecutorMemory}}m
             --executor-cores {{.ExecutorCoreNum}}
-            --class streaming.core.StreamingApp 
+            --driver-library-path "local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar"
+            --class streaming.core.StreamingApp
             --conf spark.kubernetes.container.image={{.Image}}
             --conf spark.kubernetes.container.image.pullPolicy=Always 
             --conf spark.kubernetes.namespace=default                           
@@ -42,12 +43,13 @@ spec:
             --conf spark.sql.cbo.joinReorder.enabled=true 
             --conf spark.sql.cbo.planStats.enabled=true 
             --conf spark.sql.cbo.starSchemaDetection=true 
-            --conf spark.driver.maxResultSize=2g 
+            --conf spark.driver.maxResultSize=2g
             --conf spark.serializer=org.apache.spark.serializer.KryoSerializer 
             --conf spark.kryoserializer.buffer.max=200m
             --conf spark.mlsql.auth.access_token={{.AccessToken}}
             --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""  
-            --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\"" 
+            --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
+            --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/libs/ansj_seg-5.1.6.jar:local:///home/deploy/libs/nlp-lang-1.7.8.jar\""
             {{.JarPathInContainer}}
             -streaming.name {{.Name}}
             -streaming.rest true 
