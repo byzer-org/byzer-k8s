@@ -25,7 +25,7 @@ spec:
       - name: {{.EngineConfig.Name}}
         args:
           - >-
-            echo "/opt/spark/bin/spark-submit --master k8s://https://{{.K8sAddress}}
+            echo "/work/spark-3.1.1-bin-hadoop3.2/bin/spark-submit --master k8s://https://{{.K8sAddress}}
             --deploy-mode client
             --driver-memory {{.EngineConfig.DriverMemory}}m
             --driver-cores  {{.EngineConfig.DriverCoreNum}}
