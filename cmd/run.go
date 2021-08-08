@@ -93,7 +93,7 @@ func run(c *cli.Context) error {
 		K8sAddress:   executor.GetK8sAddress()}
 
 	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, de)
-	// defer os.Remove(deployTmpFile.Name())
+	defer os.Remove(deployTmpFile.Name())
 	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 	if deployErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
