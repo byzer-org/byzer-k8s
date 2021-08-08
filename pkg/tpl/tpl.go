@@ -18,6 +18,9 @@ var (
 
 	//go:embed templates/deployment.yaml
 	TLPDeployment string
+
+	//go:embed templates/ingress.yaml
+	TLPIngress string
 )
 
 func EvaluateTemplate(templateStr string, data interface{}) string {

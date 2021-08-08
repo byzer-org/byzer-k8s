@@ -98,7 +98,7 @@ func run(c *cli.Context) error {
 	}
 
 	deployTmpFile, _ := tplEvt(tpl.TLPDeployment, de)
-	// defer os.Remove(deployTmpFile.Name())
+	defer os.Remove(deployTmpFile.Name())
 	_, deployErr := executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 	if deployErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
@@ -107,13 +107,22 @@ func run(c *cli.Context) error {
 
 	// Step4: Expose MLSQL Engine service
 	_, serviceErr := executor.CreateExpose([]string{"deployment", metaConfig.EngineConfig.Name, "--port", "9003",
-		"--target-port", "9003", "--type", "LoadBalancer"})
+		"--target-port", "9003", "--type", "NodePort"})
 	if serviceErr != nil {
 		error := errors.New(fmt.Sprintf("Fail to expose service \n %s", serviceErr.Error()))
 		return error
 	}
 
-	// Step5: Wait MLSQL Engine proxy service IP ready
+	// step5: Create Ingress
+	ingressTmpFile, _ := tplEvt(tpl.TLPIngress, de)
+	defer os.Remove(ingressTmpFile.Name())
+	_, ingressErr := executor.CreateDeployment([]string{"-f", ingressTmpFile.Name(), "-o", "json"})
+	if ingressErr != nil {
+		error := errors.New(fmt.Sprintf("Fail to create ingress for %s: %s", de.Name, ingressErr.Error()))
+		return error
+	}
+
+	// Step6: Wait MLSQL Engine proxy service IP ready
 	var ip, _ = executor.GetProxyIp()
 	var counter int32 = 30
 	for ip == "" && counter > 0 {
