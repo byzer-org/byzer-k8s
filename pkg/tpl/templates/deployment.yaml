@@ -76,8 +76,8 @@ spec:
           mountPath: /work/spark-3.1.1-bin-hadoop3.2/conf
         resources:
           limits:
-            cpu: {{.LimitDriverCoreNum}}
-            memory: {{.LimitDriverMemory}}Mi
+            cpu: "{{.LimitDriverCoreNum}}"
+            memory: "{{.LimitDriverMemory}}Mi"
           requests:
-            cpu: {{.EngineConfig.DriverCoreNum}}
-            memory: {{.EngineConfig.DriverMemory}}Mi
+            cpu: "{{.EngineConfig.DriverCoreNum}}"
+            memory: "{{.EngineConfig.DriverMemory}}Mi"
