@@ -13,14 +13,10 @@ make all
 ./mlsql-deploy --help
 ```
 
-## Deploy MLSQL Engine
+## Deploy MLSQL Engine on K8s
 
-Use [juicefs](https://github.com/juicedata/juicefs) to create a file system, here we use Redis as meta storage.
-You can download the juicefs tool from [JuiceFS 0.15.2](https://github.com/juicedata/juicefs/releases/tag/v0.15.2)
-
-Step1: If needs, create a new JuiceFS FileSystem, so we can visit any object store.
-
-> Note: please replace the `file` storage with hdfs/object store. 
+You need first downloading [JuiceFS 0.15.2](https://github.com/juicedata/juicefs/releases/tag/v0.15.2) then run following
+command:
 
 ```shell
 ./juicefs format \
@@ -30,7 +26,9 @@ Step1: If needs, create a new JuiceFS FileSystem, so we can visit any object sto
 	mlsql-k8s-storage
 ```
 
-Step2: Run MLSQL Engine in K8s cluster.
+Notice that you should replace the `file` with really object storage or HDFS.
+
+Now you can deploy MLSQL Engine on k8s:
 
 ```shell
 ./mlsql-deploy run \
