@@ -1,7 +1,7 @@
 # MLSQL-Deploy
 mlsql-deploy provides a CLI to deploy MLSQL Engine on K8S. There are three steps:
 - Building mlsql-deploy from Source
-- JuiceFS FileSystem Setup
+- JuiceFS File System Setup
 - Running mlsql-deploy CLI
 
 ## Build
@@ -15,10 +15,10 @@ make all
 ./mlsql-deploy --help
 ```
 
-It's recommended to install JuiceFS to provide a distributes fileSystem. Together with K8S, it provides user a local
+It's recommended to install JuiceFS to provide a distributes file system. Together with K8S, it provides user a local
 cloud mimic environment.
 
-## [JuiceFS](https://github.com/juicedata/juicefs) FileSystem Setup
+## [JuiceFS](https://github.com/juicedata/juicefs) File System Setup
 JuiceFS needs an object storage and database to startup.
 
 ###  Object Storage Quick Setup
