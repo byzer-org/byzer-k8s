@@ -62,18 +62,18 @@ juicefs format \
 ## Deploying MLSQL Engine on k8s
 ```shell
 ## K8S config file resides in ~/.kube/config by default.
-## chncaesar/mlsql-engine-k8s:3.0-2.1.0-SNAPSHOT is a pre-built K8S image
+## techmlsql/mlsql-engine:3.0-2.1.0 is a pre-built K8S image
 ./mlsql-deploy run \
   --kube-config  ~/.kube/config \
   --engine-name mlsql-k8s   \
-  --engine-image chncaesar/mlsql-engine-k8s:3.0-2.1.0-SNAPSHOT \
+  --engine-image techmlsql/mlsql-engine:3.0-2.1.0 \
   --engine-executor-core-num 2   \
   --engine-executor-num 1   \
   --engine-executor-memory 2048 \
   --engine-driver-core-num 2   \
   --engine-driver-memory 2048 \
   --engine-access-token mlsql   \
-  --engine-jar-path-in-container local:///home/deploy/mlsql/mlsql-engine_3.0-2.1.0-SNAPSHOT/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0-SNAPSHOT.jar   \
+  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1
 ```
