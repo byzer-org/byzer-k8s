@@ -22,13 +22,15 @@ type EngineConfig struct {
 
 	AccessToken        string
 	JarPathInContainer string
-	SparkConfig        map[string]string
+	ExtraSparkConfig   string
+	ExtraMLSQLConfig   string
 }
 
 type StorageConfig struct {
-	Name       string
-	MetaUrl    string
-	MountPoint string
-	AccessKey  string
-	SecretKey  string
+	Name        string
+	MetaUrl     string
+	MountPoint  string
+	AccessKey   string
+	SecretKey   string
+	ExtraConfig string
 }

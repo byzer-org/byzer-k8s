@@ -26,4 +26,5 @@
         <name>juicefs.access-log</name>
         <value>/tmp/juicefs.access.log</value>
     </property>
+    {{.ExtraConfig}}
 </configuration>
