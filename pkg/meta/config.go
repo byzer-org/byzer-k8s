@@ -34,3 +34,10 @@ type StorageConfig struct {
 	SecretKey   string
 	ExtraConfig string
 }
+
+type DeploymentConfig struct {
+	*EngineConfig
+	K8sAddress         string
+	LimitDriverCoreNum int64
+	LimitDriverMemory  int64
+}

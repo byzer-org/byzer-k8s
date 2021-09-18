@@ -142,7 +142,7 @@ func run(c *cli.Context) error {
 		if strings.HasPrefix(key, "engine.spark") {
 			return fmt.Sprintf("--conf \\\"%s=%s\\\"", key[7:], value)
 		} else {
-			return ""
+			return " "
 		}
 	}
 	// Filters and converts extra mlsql conf.
@@ -150,16 +150,11 @@ func run(c *cli.Context) error {
 		if strings.HasPrefix(key, "engine.streaming") {
 			return fmt.Sprintf("\\\"-%s\\\" \\\"%s\\\"", key[7:], value)
 		} else {
-			return ""
+			return " "
 		}
 	}
 	// Step3: Deploy MLSQL Engine
-	de := struct {
-		*meta.EngineConfig
-		K8sAddress         string
-		LimitDriverCoreNum int64
-		LimitDriverMemory  int64
-	}{
+	de := meta.DeploymentConfig{
 		EngineConfig: &meta.EngineConfig{
 			Name:               metaConfig.EngineConfig.Name,
 			Image:              metaConfig.EngineConfig.Image,
@@ -261,9 +256,10 @@ func engineFlags() []cli.Flag {
 			Usage: "the access token to protect mlsql engine",
 		},
 		&cli.StringFlag{
-			Name:  "engine-jar-path-in-container",
-			Value: "",
-			Usage: "The path of mlsql engine jar in docker image",
+			Name:     "engine-jar-path-in-container",
+			Value:    "",
+			Usage:    "The path of mlsql engine jar in docker image",
+			Required: true,
 		},
 	}
 }
