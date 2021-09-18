@@ -25,7 +25,8 @@ spec:
       - name: {{.EngineConfig.Name}}
         args:
           - >-
-            echo "/work/spark-3.1.1-bin-hadoop3.2/bin/spark-submit --master k8s://https://{{.K8sAddress}}
+            echo "/work/spark-3.1.1-bin-hadoop3.2/bin/spark-submit
+            --master k8s://https://{{.K8sAddress}}
             --deploy-mode client
             --driver-memory {{.EngineConfig.DriverMemory}}m
             --driver-cores  {{.EngineConfig.DriverCoreNum}}
@@ -52,6 +53,7 @@ spec:
             --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
             --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
             --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/mlsql/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/mlsql/libs/ansj_seg-5.1.6.jar:local:///home/deploy/mlsql/libs/nlp-lang-1.7.8.jar\""
+            {{.EngineConfig.ExtraSparkConfig -}}
             {{.EngineConfig.JarPathInContainer}}
             -streaming.name {{.EngineConfig.Name}}
             -streaming.rest true
@@ -60,7 +62,9 @@ spec:
             -streaming.enableHiveSupport true
             -streaming.spark.service true
             -streaming.job.cancel true
-            -streaming.driver.port 9003" | bash
+            -streaming.driver.port 9003
+            {{- .EngineConfig.ExtraMLSQLConfig}}
+            " | bash
         command:
           - /bin/sh
           - '-c'

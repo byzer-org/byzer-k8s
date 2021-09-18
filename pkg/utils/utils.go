@@ -22,6 +22,8 @@ import (
 	"strings"
 )
 
+var logger = GetLogger("mlsql-deploy")
+
 func CreateTmpFile(content string) (*os.File, error) {
 	//fsys := os.DirFS(".")
 	tmpfile, _ := os.CreateTemp(".", "*")
@@ -39,6 +41,37 @@ func BuildJsonQueryFromStr(jsonStr string) *jsonq.JsonQuery {
 	jq := jsonq.NewQuery(data)
 	return jq
 
+}
+
+// ReadConfigFile returns spark storage and mlsql config in one map
+func ReadConfigFile(path string) (map[string]string, error) {
+	if len(path) == 0 {
+		return nil, errors.New("config file is required")
+	}
+
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	logger.Infof("Read config file %s", path)
+
+	conf := make(map[string]string)
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		confArr := strings.Split(line, "=")
+		// skip the line if it does not contain =
+		if len(confArr) < 2 {
+			continue
+		}
+		conf[confArr[0]] = confArr[1]
+	}
+	if scanner.Err() != nil {
+		return nil, scanner.Err()
+	}
+	return conf, nil
 }
 
 type KubeExecutor struct {

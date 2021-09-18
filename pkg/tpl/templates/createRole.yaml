@@ -8,6 +8,7 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - configmaps
   - pods
   - pods/status
   - pods/log
