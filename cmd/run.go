@@ -140,7 +140,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra spark conf
 	sparkConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.spark") {
-			return fmt.Sprintf("--conf \\\"%s=%s\\\"", key[7:], value)
+			return fmt.Sprintf(" --conf \\\"%s=%s\\\"", strings.TrimSpace(key[7:]), strings.TrimSpace(value))
 		} else {
 			return " "
 		}
@@ -148,7 +148,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra mlsql conf.
 	mlsqlConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.streaming") {
-			return fmt.Sprintf("\\\"-%s\\\" \\\"%s\\\"", key[7:], value)
+			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimSpace(key[7:]), strings.TrimSpace(value))
 		} else {
 			return " "
 		}
