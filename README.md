@@ -76,7 +76,7 @@ juicefs format \
   --engine-jar-path-in-container local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1 \
-  --conf-file /home/hadoop/.engine.config
+  --engine-config /home/hadoop/.engine.config
 ```
 
 /home/hadoop/.engine.config
