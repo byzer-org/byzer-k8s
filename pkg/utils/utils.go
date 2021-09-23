@@ -9,6 +9,8 @@ import (
 	"github.com/jmoiron/jsonq"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/kubectl/pkg/cmd/apply"
 	"k8s.io/kubectl/pkg/cmd/create"
 	k8sdelete "k8s.io/kubectl/pkg/cmd/delete"
@@ -171,8 +173,34 @@ func (executor *KubeExecutor) CreateDeployment(command []string) (string, error)
 	return executor.setupCommand(create)
 }
 
+func parseK8sConfig(config string) (*api.Config, error) {
+	if len(config) == 0 {
+		return nil, errors.New("k8s config should not be empty")
+	}
+	configObj, error := clientcmd.Load([]byte(config))
+	if error != nil {
+		panic(error.Error())
+	}
+	return configObj, nil
+}
+
+// GetK8sAddress returns apiServer address,
+// if multiple clusters exist, it takes one by random.
 func (executor *KubeExecutor) GetK8sAddress() string {
-	return strings.Split(strings.Split(executor.kubeConfig.KubeConfig, "\n")[4], "//")[1]
+	config, error := parseK8sConfig(executor.kubeConfig.KubeConfig)
+	if error != nil {
+		panic(error)
+	}
+
+	var apiServer string
+	for _, v := range config.Clusters {
+		apiServer = v.Server
+		break
+	}
+	if len(apiServer) == 0 {
+		panic("Failed to read apiServer ")
+	}
+	return apiServer
 }
 
 func (executor *KubeExecutor) GetProxyIp() (string, error) {
