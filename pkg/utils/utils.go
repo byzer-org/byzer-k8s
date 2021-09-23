@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/jsonq"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -48,31 +49,31 @@ func BuildJsonQueryFromStr(jsonStr string) *jsonq.JsonQuery {
 // ReadConfigFile returns spark storage and mlsql config in one map
 func ReadConfigFile(path string) (map[string]string, error) {
 	if len(path) == 0 {
-		return nil, errors.New("config file is required")
+		logger.Fatalf("load engine config file from %s: %s", path, errors.New("config file is required"))
 	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
 
 	logger.Infof("Read config file %s", path)
 
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		logger.Fatalf("load engine config file from %s: %s", path, err)
+	}
+
+	lines := strings.Split(string(b), "\n")
 	conf := make(map[string]string)
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		confArr := strings.Split(line, "=")
-		// skip the line if it does not contain =
-		if len(confArr) < 2 {
+
+	for _, line := range lines {
+		cleanLine := strings.TrimSpace(line)
+		if cleanLine == "" {
 			continue
 		}
-		conf[confArr[0]] = confArr[1]
+		if strings.HasPrefix(cleanLine, "#") {
+			continue
+		}
+		kv := strings.SplitN(line, "=", 2)
+		conf[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
 	}
-	if scanner.Err() != nil {
-		return nil, scanner.Err()
-	}
+
 	return conf, nil
 }
 

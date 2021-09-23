@@ -32,7 +32,6 @@ func run(c *cli.Context) error {
 	b, err := ioutil.ReadFile(kubeConfigPath)
 	if err != nil {
 		logger.Fatalf("load kube config file from %s: %s", kubeConfigPath, err)
-		return nil
 	}
 	k8sConfig := meta.K8sConfig{KubeConfig: string(b)}
 
@@ -56,8 +55,8 @@ func run(c *cli.Context) error {
 	// Read config from file
 	var extraConf map[string]string
 	var parseConfErr error
-	if c.IsSet("conf-file") {
-		confFile := c.String("conf-file")
+	if c.IsSet("engine-config") {
+		confFile := c.String("engine-config")
 		extraConf, parseConfErr = utils.ReadConfigFile(confFile)
 		if parseConfErr != nil {
 			logger.Fatalf("Failed to read %s, error %s", confFile, err)
@@ -94,7 +93,7 @@ func run(c *cli.Context) error {
 		var buf bytes.Buffer
 		if strings.HasPrefix(key, "engine.storage") {
 			buf.WriteString("<property>\n")
-			buf.WriteString(fmt.Sprintf("<name>%s</name>\n", key[7:]))
+			buf.WriteString(fmt.Sprintf("<name>%s</name>\n", strings.TrimLeft(key, "engine.storage.")))
 			buf.WriteString(fmt.Sprintf("<value>%s</value>\n", value))
 			buf.WriteString("</property>")
 		}
@@ -140,7 +139,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra spark conf
 	sparkConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.spark") {
-			return fmt.Sprintf(" --conf \\\"%s=%s\\\"", strings.TrimSpace(key[7:]), strings.TrimSpace(value))
+			return fmt.Sprintf(" --conf \\\"%s=%s\\\"", strings.TrimPrefix(key, "engine.spark."), value)
 		} else {
 			return " "
 		}
@@ -148,7 +147,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra mlsql conf.
 	mlsqlConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.streaming") {
-			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimSpace(key[7:]), strings.TrimSpace(value))
+			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimPrefix(key, "engine.streaming."), value)
 		} else {
 			return " "
 		}
@@ -312,9 +311,9 @@ func runFlags() *cli.Command {
 	cmd.Flags = append(cmd.Flags, storageFlags()...)
 
 	cmd.Flags = append(cmd.Flags, &cli.StringFlag{
-		Name:     "conf-file",
+		Name:     "engine-config",
 		Required: false,
-		Usage:    "config file full path",
+		Usage:    "path extra engine config file",
 	})
 	return cmd
 }
