@@ -121,7 +121,7 @@ func run(c *cli.Context) error {
 		return coreSiteTmpErr
 	}
 
-	// Step2: Add role and service count in k8s
+	// Step2: Add role and service account in k8s
 	createRoleTmpFile, _ := tplEvt(tpl.TLPCreateRole, tpl.Empty{})
 	defer os.Remove(createRoleTmpFile.Name())
 	_, createRoleErr := executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})
@@ -139,7 +139,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra spark conf
 	sparkConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.spark") {
-			return fmt.Sprintf(" --conf \\\"%s=%s\\\"", strings.TrimPrefix(key, "engine.spark."), value)
+			return fmt.Sprintf(" --conf \\\"%s=%s\\\"", strings.TrimPrefix(key, "engine."), value)
 		} else {
 			return " "
 		}
@@ -147,7 +147,7 @@ func run(c *cli.Context) error {
 	// Filters and converts extra mlsql conf.
 	mlsqlConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.streaming") {
-			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimPrefix(key, "engine.streaming."), value)
+			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimPrefix(key, "engine."), value)
 		} else {
 			return " "
 		}
@@ -251,7 +251,7 @@ func engineFlags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:  "engine-access-token",
-			Value: "mlsql",
+			Value: "",
 			Usage: "the access token to protect mlsql engine",
 		},
 		&cli.StringFlag{
