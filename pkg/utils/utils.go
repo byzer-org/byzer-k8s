@@ -198,6 +198,7 @@ func (executor *KubeExecutor) GetK8sAddress() string {
 		apiServer = v.Server
 		break
 	}
+	logger.Infof("apiServer %s\n", apiServer)
 	if len(apiServer) == 0 {
 		panic("Failed to read apiServer ")
 	}

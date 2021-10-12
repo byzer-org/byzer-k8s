@@ -11,9 +11,15 @@ import (
 func TestConfFile(t *testing.T) {
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
-	content := `engine.spark.confkey=confvalue
-engine.storage.confkey=confvalue
-engine.streaming.port=19003`
+	content := `engine.spark.kubernetes.container.image.pullPolicy=IfNotPresent
+engine.spark.local.dir=/work/shuffle-data
+engine.spark.kubernetes.driver.volumes.hostPath.spark-local-dir-shuffle-disk-drv.mount.path=/work/shuffle-data
+engine.spark.kubernetes.driver.volumes.hostPath.spark-local-dir-shuffle-disk-drv.mount.readOnly=false
+engine.spark.kubernetes.driver.volumes.hostPath.spark-local-dir-shuffle-disk-drv.options.path=/work/mnt/spark-shuffle-drv
+engine.spark.kubernetes.executor.volumes.hostPath.spark-local-dir-shuffle-disk.mount.path=/work/shuffle-data
+engine.spark.kubernetes.executor.volumes.hostPath.spark-local-dir-shuffle-disk.mount.readOnly=false
+engine.spark.kubernetes.executor.volumes.hostPath.spark-local-dir-shuffle-disk.options.path=/work/mnt/spark-shuffle-exec
+engine.streaming.datalake.path=./data/`
 	f, e := utils.CreateTmpFile(content)
 	if e != nil {
 		logger.Error(e)
@@ -32,7 +38,7 @@ engine.streaming.port=19003`
 		"--engine-name", "mlsql-engine",
 		"--engine-image", "techmlsql/mlsql-engine:3.0-2.1.0",
 		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar",
-		"--conf-file", f.Name(),
+		"--engine-config", f.Name(),
 	}
 	os.Args = append([]string{"mlsql-deploy"}, args...)
 	main()
