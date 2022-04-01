@@ -37,7 +37,7 @@ engine.streaming.datalake.path=./data/`
 		"--engine-driver-memory", "512",
 		"--engine-name", "mlsql-engine",
 		"--engine-image", "techmlsql/mlsql-engine:3.0-2.1.0",
-		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar",
+		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar",
 		"--engine-config", f.Name(),
 	}
 	os.Args = append([]string{"mlsql-deploy"}, args...)
@@ -60,7 +60,7 @@ func TestNonConfFile(t *testing.T) {
 		"--engine-driver-memory", "512",
 		"--engine-name", "mlsql-engine",
 		"--engine-image", "techmlsql/mlsql-engine:3.0-2.1.0",
-		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar",
+		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar",
 	}
 	os.Args = append([]string{"mlsql-deploy"}, args...)
 	main()

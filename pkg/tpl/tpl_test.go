@@ -17,7 +17,7 @@ func TestEvaluateDeploymentTemplate(t *testing.T) {
 			DriverCoreNum:      1,
 			DriverMemory:       512,
 			AccessToken:        "mlsql",
-			JarPathInContainer: "local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar",
+			JarPathInContainer: "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar",
 		},
 		K8sAddress:         "https://localhost:8443",
 		LimitDriverCoreNum: 1,
@@ -25,7 +25,7 @@ func TestEvaluateDeploymentTemplate(t *testing.T) {
 	}
 	tplStr := EvaluateTemplate(TLPDeployment, de)
 
-	if !strings.Contains(tplStr, "local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar") {
+	if !strings.Contains(tplStr, "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar") {
 		t.Errorf("Evaluated container args is invalid\n%s", tplStr)
 	}
 }
