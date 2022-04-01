@@ -73,7 +73,7 @@ juicefs format \
   --engine-driver-core-num 2   \
   --engine-driver-memory 2048 \
   --engine-access-token mlsql   \
-  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/streamingpro-mlsql-spark_3.0_2.12-2.1.0.jar   \
+  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1 \
   --engine-config /home/hadoop/.engine.config
