@@ -17,4 +17,5 @@ libjfs.h
 .DS_Store
 docs/node_modules
 mlsql-deploy
+byzer-k8s-deploy
 *.test

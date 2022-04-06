@@ -61,8 +61,8 @@ func main() {
 	}
 
 	app := cli.App{
-		Name:                 "mlsql-deploy",
-		Usage:                "Cli to deploy MLSQL Engine in K8s",
+		Name:                 "byzer-k8s-deploy",
+		Usage:                "CLI to deploy Byzer Engine in K8s",
 		Version:              version.Version(),
 		Copyright:            "Apache License V2",
 		EnableBashCompletion: true,

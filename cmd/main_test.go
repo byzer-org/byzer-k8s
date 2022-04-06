@@ -35,12 +35,12 @@ engine.streaming.datalake.path=./data/`
 		"--engine-executor-memory", "512",
 		"--engine-driver-core-num", "1",
 		"--engine-driver-memory", "512",
-		"--engine-name", "mlsql-engine",
-		"--engine-image", "techmlsql/mlsql-engine:3.0-2.1.0",
-		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar",
+		"--engine-name", "byzer-engine",
+		"--engine-image", "byzer/byzer-lang-k8s:3.1.1-latest",
+		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-latest.jar",
 		"--engine-config", f.Name(),
 	}
-	os.Args = append([]string{"mlsql-deploy"}, args...)
+	os.Args = append([]string{"byzer-k8s-deploy"}, args...)
 	main()
 }
 
@@ -58,10 +58,10 @@ func TestNonConfFile(t *testing.T) {
 		"--engine-executor-memory", "512",
 		"--engine-driver-core-num", "1",
 		"--engine-driver-memory", "512",
-		"--engine-name", "mlsql-engine",
-		"--engine-image", "techmlsql/mlsql-engine:3.0-2.1.0",
-		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar",
+		"--engine-name", "byzer-engine",
+		"--engine-image", "byzer/byzer-lang-k8s:3.1.1-latest",
+		"--engine-jar-path-in-container", "local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-latest.jar",
 	}
-	os.Args = append([]string{"mlsql-deploy"}, args...)
+	os.Args = append([]string{"byzer-k8s-deploy"}, args...)
 	main()
 }

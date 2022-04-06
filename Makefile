@@ -1,6 +1,6 @@
 export GO111MODULE=on
 
-all: mlsql-deploy
+all: byzer-k8s-deploy
 
 REVISION := $(shell git rev-parse --short HEAD 2>/dev/null)
 REVISIONDATE := $(shell git log -1 --pretty=format:'%ad' --date short 2>/dev/null)
@@ -19,5 +19,5 @@ ifdef STATIC
 	export CC
 endif
 
-mlsql-deploy: Makefile cmd/*.go pkg/*/*.go
-	go build -ldflags="$(LDFLAGS)"  -o mlsql-deploy ./cmd
+byzer-k8s-deploy: Makefile cmd/*.go pkg/*/*.go
+	go build -ldflags="$(LDFLAGS)"  -o byzer-k8s-deploy ./cmd
