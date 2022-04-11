@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-var logger = utils.GetLogger("mlsql-deploy")
+var logger = utils.GetLogger("byzer-k8s-deploy")
 
 func globalFlags() []cli.Flag {
 	return []cli.Flag{
@@ -30,7 +30,7 @@ func globalFlags() []cli.Flag {
 }
 
 /**
-mlsql-deploy run \
+byzer-k8s-deploy run \
 --kube-config /tmp/.. \
 
 --engine-name xxxx   \

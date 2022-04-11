@@ -72,7 +72,7 @@ juicefs format \
   --engine-executor-memory 2048 \
   --engine-driver-core-num 2   \
   --engine-driver-memory 2048 \
-  --engine-access-token byzer   \
+  --engine-access-token mlsql   \
   --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.2.2.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1 \
