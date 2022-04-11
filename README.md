@@ -62,18 +62,18 @@ juicefs format \
 ## Deploying Byzer Engine on k8s
 ```shell
 ## K8S config file resides in ~/.kube/config by default.
-## byzer/byzer-lang-k8s:3.1.1-latest is a pre-built K8S image which hosted on Docker Hub
+## byzer/byzer-lang-k8s:3.1.1-2.2.2 is a pre-built K8S image which hosted on Docker Hub
 ./byzer-k8s-deploy run \
   --kube-config  ~/.kube/config \
   --engine-name byzer-k8s   \
-  --engine-image byzer/byzer-lang-k8s:3.1.1-latest \
+  --engine-image byzer/byzer-lang-k8s:3.1.1-2.2.2 \
   --engine-executor-core-num 2   \
   --engine-executor-num 1   \
   --engine-executor-memory 2048 \
   --engine-driver-core-num 2   \
   --engine-driver-memory 2048 \
   --engine-access-token byzer   \
-  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-latest.jar   \
+  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.2.2.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1 \
   --engine-config /home/hadoop/.engine.config
