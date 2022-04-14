@@ -144,7 +144,7 @@ func run(c *cli.Context) error {
 			return " "
 		}
 	}
-	// Filters and converts extra mlsql conf.
+	// Filters and converts extra byzer engine conf.
 	mlsqlConfConverter := func(key, value string) string {
 		if strings.HasPrefix(key, "engine.streaming") {
 			return fmt.Sprintf("\\\" -%s\\\" \\\"%s\\\" ", strings.TrimPrefix(key, "engine."), value)
@@ -152,7 +152,7 @@ func run(c *cli.Context) error {
 			return " "
 		}
 	}
-	// Step3: Deploy MLSQL Engine
+	// Step3: Deploy Byzer Engine
 	de := meta.DeploymentConfig{
 		EngineConfig: &meta.EngineConfig{
 			Name:               metaConfig.EngineConfig.Name,
@@ -180,7 +180,7 @@ func run(c *cli.Context) error {
 		return errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
 	}
 
-	// Step4: Expose MLSQL Engine service
+	// Step4: Expose Byzer Engine service
 	_, serviceErr := executor.CreateExpose([]string{"deployment", metaConfig.EngineConfig.Name, "--port", "9003",
 		"--target-port", "9003", "--type", "NodePort"})
 	if serviceErr != nil {
@@ -196,7 +196,7 @@ func run(c *cli.Context) error {
 		return errors.New(fmt.Sprintf("Fail to create ingress for %s: %s", de.Name, ingressErr.Error()))
 	}
 
-	// Step6: Wait MLSQL Engine proxy service IP ready
+	// Step6: Wait Byzer Engine proxy service IP ready
 	var ip, _ = executor.GetProxyIp()
 	var counter int32 = 30
 	for ip == "" && counter > 0 {
@@ -206,7 +206,7 @@ func run(c *cli.Context) error {
 		ip, _ = executor.GetProxyIp()
 	}
 
-	logger.Infof("MLSQL Engine is ready: http://%s:%s", ip, "9003")
+	logger.Infof("Byzer Engine is ready: http://%s:%s", ip, "9003")
 	return nil
 }
 
@@ -215,12 +215,12 @@ func engineFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:     "engine-name",
 			Required: true,
-			Usage:    "The name of MLSQL Engine",
+			Usage:    "The name of Byzer Engine",
 		},
 		&cli.StringFlag{
 			Name:     "engine-image",
 			Required: true,
-			Usage:    "The name of MLSQL Engine",
+			Usage:    "The name of Byzer Engine",
 		},
 		&cli.IntFlag{
 			Name:  "engine-executor-core-num",
@@ -252,12 +252,12 @@ func engineFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:  "engine-access-token",
 			Value: "",
-			Usage: "the access token to protect mlsql engine",
+			Usage: "the access token to protect byzer engine",
 		},
 		&cli.StringFlag{
 			Name:     "engine-jar-path-in-container",
 			Value:    "",
-			Usage:    "The path of mlsql engine jar in docker image",
+			Usage:    "The path of byzer engine jar in docker image",
 			Required: true,
 		},
 	}
@@ -296,7 +296,7 @@ func storageFlags() []cli.Flag {
 func runFlags() *cli.Command {
 	cmd := &cli.Command{
 		Name:      "run",
-		Usage:     "run MLSQL Engine on specific resource manager framework e.g. K8s, Yarn",
+		Usage:     "run Byzer Engine on specific resource manager framework e.g. K8s, Yarn",
 		ArgsUsage: "k8s",
 		Action:    run,
 		Flags: []cli.Flag{

@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-var logger = utils.GetLogger("mlsql-deploy")
+var logger = utils.GetLogger("byzer-k8s-deploy")
 
 func globalFlags() []cli.Flag {
 	return []cli.Flag{
@@ -30,7 +30,7 @@ func globalFlags() []cli.Flag {
 }
 
 /**
-mlsql-deploy run \
+byzer-k8s-deploy run \
 --kube-config /tmp/.. \
 
 --engine-name xxxx   \
@@ -61,8 +61,8 @@ func main() {
 	}
 
 	app := cli.App{
-		Name:                 "mlsql-deploy",
-		Usage:                "Cli to deploy MLSQL Engine in K8s",
+		Name:                 "byzer-k8s-deploy",
+		Usage:                "CLI to deploy Byzer Engine in K8s",
 		Version:              version.Version(),
 		Copyright:            "Apache License V2",
 		EnableBashCompletion: true,

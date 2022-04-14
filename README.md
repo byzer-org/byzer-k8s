@@ -1,8 +1,8 @@
-# MLSQL-Deploy
-mlsql-deploy provides a CLI to deploy MLSQL Engine on K8S. There are three steps:
-- Building mlsql-deploy from Source
+# Byzer-K8S-Deploy
+byzer-k8s-deploy provides a CLI to deploy Byzer Engine on K8S. There are three steps:
+- Building byzer-k8s-deploy from Source
 - JuiceFS File System Setup
-- Running mlsql-deploy CLI
+- Running byzer-k8s-deploy CLI
 
 ## Build
 ```
@@ -11,8 +11,8 @@ make all
 
 ## Command
 ```shell
-./mlsql-deploy --version
-./mlsql-deploy --help
+./byzer-k8s-deploy --version
+./byzer-k8s-deploy --help
 ```
 
 It's recommended to install JuiceFS to provide a distributes file system. Together with K8S, it provides user a local
@@ -59,21 +59,20 @@ juicefs format \
   jfs
 ```
 
-## Deploying MLSQL Engine on k8s
+## Deploying Byzer Engine on k8s
 ```shell
 ## K8S config file resides in ~/.kube/config by default.
-## techmlsql/mlsql-engine:3.0-2.1.0 is a pre-built K8S image
-./mlsql-deploy run \
+## byzer/byzer-lang-k8s:3.1.1-2.2.2 is a pre-built K8S image which hosted on Docker Hub
+./byzer-k8s-deploy run \
   --kube-config  ~/.kube/config \
-  --engine-name mlsql-k8s   \
-  --engine-image techmlsql/mlsql-engine:3.0-2.1.0 \
+  --engine-name byzer-k8s   \
+  --engine-image byzer/byzer-lang-k8s:3.1.1-2.2.2 \
   --engine-executor-core-num 2   \
   --engine-executor-num 1   \
   --engine-executor-memory 2048 \
   --engine-driver-core-num 2   \
   --engine-driver-memory 2048 \
-  --engine-access-token mlsql   \
-  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.1.0.jar   \
+  --engine-jar-path-in-container local:///home/deploy/mlsql/libs/byzer-lang-3.1.1-2.12-2.2.2.jar   \
   --storage-name  jfs \
   --storage-meta-url redis://127.0.0.1:6379/1 \
   --engine-config /home/hadoop/.engine.config

@@ -25,7 +25,7 @@ import (
 	"strings"
 )
 
-var logger = GetLogger("mlsql-deploy")
+var logger = GetLogger("byzer-k8s-deploy")
 
 func CreateTmpFile(content string) (*os.File, error) {
 	//fsys := os.DirFS(".")
