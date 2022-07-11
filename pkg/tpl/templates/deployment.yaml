@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   annotations: {}
   name: {{.EngineConfig.Name}}
-  namespace: default
+  namespace: {{.EngineConfig.Namespace}}
 spec:
   selector:
     matchLabels:
@@ -20,7 +20,7 @@ spec:
       volumes:
          - name: spark-conf
            configMap:
-              name: core-site-xml
+              name: {{.EngineConfig.Name}}-core-site-xml
       containers:
       - name: {{.EngineConfig.Name}}
         args:
@@ -28,38 +28,27 @@ spec:
             echo "/work/spark-3.1.1-bin-hadoop3.2/bin/spark-submit
             --master k8s://{{.K8sAddress}}
             --deploy-mode client
-            --driver-memory {{.EngineConfig.DriverMemory}}m
-            --driver-cores  {{.EngineConfig.DriverCoreNum}}
-            --executor-memory {{.EngineConfig.ExecutorMemory}}m
-            --executor-cores {{.EngineConfig.ExecutorCoreNum}}
-            --driver-library-path "local:///home/deploy/mlsql/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/mlsql/libs/ansj_seg-5.1.6.jar:local:///home/deploy/mlsql/libs/nlp-lang-1.7.8.jar"
+            --driver-memory {{.EngineConfig.DriverMemory}}m            
+            --executor-memory {{.EngineConfig.ExecutorMemory}}m            
+            --driver-class-path /home/deploy/byzer-lang/libs/juicefs-hadoop-0.17.5-linux-amd64.jar:/home/deploy/byzer-lang/libs/ansj_seg-5.1.6.jar:/home/deploy/byzer-lang/libs/nlp-lang-1.7.8.jar:/home/deploy/byzer-lang/plugin/mlsql-assert-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/mlsql-excel-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-ext-ets-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-shell-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-mllib-3.0_2.12-0.1.0-SNAPSHOT.jar
             --class streaming.core.StreamingApp
+            --conf spark.kubernetes.driver.request.cores={{.EngineConfig.DriverCoreNum}}
+            --conf spark.kubernetes.executor.request.cores={{.EngineConfig.ExecutorCoreNum}}
+            --conf spark.executor.extraClassPath=/home/deploy/byzer-lang/libs/juicefs-hadoop-0.17.5-linux-amd64.jar:/home/deploy/byzer-lang/libs/ansj_seg-5.1.6.jar:/home/deploy/byzer-lang/libs/nlp-lang-1.7.8.jar:/home/deploy/byzer-lang/plugin/mlsql-assert-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/mlsql-excel-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-ext-ets-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-shell-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-mllib-3.0_2.12-0.1.0-SNAPSHOT.jar
             --conf spark.kubernetes.container.image={{.EngineConfig.Image}}
-            --conf spark.kubernetes.container.image.pullPolicy=Always
-            --conf spark.kubernetes.namespace=default
+            --conf spark.kubernetes.namespace={{.EngineConfig.Namespace}}
+            --conf spark.kubernetes.authenticate.driver.serviceAccountName={{.EngineConfig.ServiceAccountName}}
             --conf spark.kubernetes.executor.request.cores={{.EngineConfig.ExecutorCoreNum}}
             --conf spark.kubernetes.executor.limit.cores={{.EngineConfig.ExecutorCoreNum}}
             --conf spark.executor.instances={{.EngineConfig.ExecutorNum}}
             --conf spark.driver.host=$POD_IP
-            --conf spark.sql.cbo.enabled=true
-            --conf spark.sql.adaptive.enabled=true
-            --conf spark.sql.cbo.joinReorder.enabled=true
-            --conf spark.sql.cbo.planStats.enabled=true
-            --conf spark.sql.cbo.starSchemaDetection=true
-            --conf spark.driver.maxResultSize=2g
-            --conf spark.serializer=org.apache.spark.serializer.KryoSerializer
-            --conf spark.kryoserializer.buffer.max=200m
             --conf spark.mlsql.auth.access_token={{.EngineConfig.AccessToken}}
-            --conf "\"spark.executor.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
-            --conf "\"spark.driver.extraJavaOptions=-XX:+UnlockExperimentalVMOptions -XX:+UseZGC -XX:+UseContainerSupport  -Dio.netty.tryReflectionSetAccessible=true\""
-            --conf "\"spark.executor.extraLibraryPath=local:///home/deploy/mlsql/libs/juicefs-hadoop-0.15.2-linux-amd64.jar:local:///home/deploy/mlsql/libs/ansj_seg-5.1.6.jar:local:///home/deploy/mlsql/libs/nlp-lang-1.7.8.jar\""
             {{- .EngineConfig.ExtraSparkConfig}}
             {{.EngineConfig.JarPathInContainer}}
             -streaming.name {{.EngineConfig.Name}}
             -streaming.rest true
             -streaming.thrift false
             -streaming.platform spark
-            -streaming.enableHiveSupport true
             -streaming.spark.service true
             -streaming.job.cancel true
             -streaming.driver.port 9003

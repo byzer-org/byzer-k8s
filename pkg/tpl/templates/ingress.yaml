@@ -1,14 +1,15 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{.EngineConfig.Name}}-ingress
+  name: {{.EngineConfig.Name}}
+  namespace: {{.EngineConfig.Namespace}}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - http:
         paths:
-          - path: /
+          - path: /{{.EngineConfig.Name}}(/|$)(.*)
             pathType: Prefix
             backend:
               service:

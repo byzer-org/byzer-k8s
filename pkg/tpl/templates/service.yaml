@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.EngineConfig.Name}}
+  namespace: {{.EngineConfig.Namespace}}
+spec:
+  ports:
+    - port: 9003
+      protocol: TCP
+      targetPort: 9003
+  selector:
+    app: {{.EngineConfig.Name}}
+  type: ClusterIP
+status:
+  loadBalancer: { }

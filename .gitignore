@@ -19,3 +19,8 @@ docs/node_modules
 mlsql-deploy
 byzer-k8s-deploy
 *.test
+.engine.config
+byzer-k8s-darwin-amd64
+byzer-k8s-linux-amd64
+byzerup-darwin-amd64
+byzerup-linux-amd64
