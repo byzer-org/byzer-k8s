@@ -34,7 +34,8 @@ func storageConfConverter(key, value string) string {
 }
 
 func (v *ConfigMapOp) Execute(verbose bool) error {
-	v.executor.DeleteAny([]string{"configmap", fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)})
+	keyName := fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)
+	v.executor.DeleteAny([]string{"configmap", keyName})
 
 	coreSiteTmpFile, _ := op_utils.TplEvt(tpl.TLPCoreSite,
 		meta.StorageConfig{
@@ -47,7 +48,7 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 		},
 		verbose)
 	defer os.Remove(coreSiteTmpFile.Name())
-	_, coreSiteTmpErr := v.executor.CreateCM([]string{"core-site-xml", "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
+	_, coreSiteTmpErr := v.executor.CreateCM([]string{keyName, "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
 	if coreSiteTmpErr != nil {
 		logger.Fatalf("Fail to create core-site-xml in cm \n %s", coreSiteTmpErr.Error())
 		return coreSiteTmpErr

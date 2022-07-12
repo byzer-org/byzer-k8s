@@ -21,7 +21,7 @@ func ConvertToConfString(extraConfMap map[string]string, converter func(key, val
 }
 
 func TplEvt(templateStr string, data interface{},verbose bool) (*os.File, error) {
-	if verbose {
+	if verbose == true {
 		jsonObj, _ := json.Marshal(data)
 		logger.Infof("%s\n", string(jsonObj))
 	}
