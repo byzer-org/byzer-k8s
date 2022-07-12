@@ -20,7 +20,7 @@ spec:
       volumes:
          - name: spark-conf
            configMap:
-              name: core-site-xml
+              name: {{.EngineConfig.Name}}-core-site-xml
       containers:
       - name: {{.EngineConfig.Name}}
         args:

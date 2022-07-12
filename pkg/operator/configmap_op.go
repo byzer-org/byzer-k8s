@@ -34,7 +34,7 @@ func storageConfConverter(key, value string) string {
 }
 
 func (v *ConfigMapOp) Execute(verbose bool) error {
-	v.executor.DeleteAny([]string{"configmap", "core-site-xml"})
+	v.executor.DeleteAny([]string{"configmap", fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)})
 
 	coreSiteTmpFile, _ := op_utils.TplEvt(tpl.TLPCoreSite,
 		meta.StorageConfig{
