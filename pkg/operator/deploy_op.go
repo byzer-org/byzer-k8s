@@ -73,7 +73,7 @@ func (v *DeployOp) Execute(verbose bool) error {
 
 	// Step2: Expose Byzer Engine as Service
 	serviceInfo, serviceErr := v.executor.CreateExpose([]string{"deployment", v.metaConfig.EngineConfig.Name, "--port", "9003",
-		"--target-port", "9003", "--type", "NodePort"})
+		"--target-port", "9003", "--type", "ClusterIP"})
 
 	logger.Info(serviceInfo)
 
@@ -82,7 +82,7 @@ func (v *DeployOp) Execute(verbose bool) error {
 
 	}
 
-	// step3: Create Ingress
+	// step2: Create Ingress
 	ingressTmpFile, _ := op_utils.TplEvt(tpl.TLPIngress, de, verbose)
 	defer os.Remove(ingressTmpFile.Name())
 	ingressInfo, ingressErr := v.executor.CreateDeployment([]string{"-f", ingressTmpFile.Name(), "-o", "json"})
