@@ -2,15 +2,14 @@ package main
 
 import (
 	"github.com/urfave/cli/v2"
-	"mlsql.tech/allwefantasy/deploy/pkg/meta"
 )
 
 func delete(c *cli.Context) error {
 
-	k8sConfig := meta.BuildKubeConfig(c)
-	engineName := c.String("engine-name")
+	//k8sConfig := meta.BuildKubeConfig(c)
+	//engineName := c.String("engine-name")
 
-	
+
 
 	return nil
 }
