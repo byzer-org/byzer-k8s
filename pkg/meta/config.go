@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"mlsql.tech/allwefantasy/deploy/pkg/utils"
 )
-var logger = utils.GetLogger("byzer-k8s-deploy")
+
 type MetaConfig struct {
 	K8sConfig     K8sConfig
 	EngineConfig  EngineConfig
@@ -17,8 +17,8 @@ type K8sConfig struct {
 	KubeConfig string
 }
 type EngineConfig struct {
-	Name  string
-	Image string
+	Name          string
+	Image         string
 	EngineVersion string
 
 	ExecutorCoreNum int64
@@ -38,10 +38,23 @@ func BuildKubeConfig(c *cli.Context) K8sConfig {
 	kubeConfigPath := c.String("kube-config")
 	b, err := ioutil.ReadFile(kubeConfigPath)
 	if err != nil {
-		logger.Fatalf("load kube config file from %s: %s", kubeConfigPath, err)
+		panic(fmt.Sprintf("load kube config file from %s: %s", kubeConfigPath, err))
 	}
 	k8sConfig := K8sConfig{KubeConfig: string(b)}
 	return k8sConfig
+}
+
+func BuildExtraEngineConfig(c *cli.Context) (map[string]string, error) {
+	var extraConf map[string]string
+	var parseConfErr error
+	if c.IsSet("engine-config") {
+		confFile := c.String("engine-config")
+		extraConf, parseConfErr = utils.ReadConfigFile(confFile)
+		if parseConfErr != nil {
+			return extraConf, parseConfErr
+		}
+	}
+	return extraConf, nil
 }
 
 func BuildEngineConfig(c *cli.Context) EngineConfig {
@@ -56,6 +69,10 @@ func BuildEngineConfig(c *cli.Context) EngineConfig {
 		if jarPathInContainer == "" {
 			jarPathInContainer = fmt.Sprintf("local:///home/deploy/byzer-lang/main/byzer-lang-3.1.1-2.12-%s.jar", engineVersion)
 		}
+	}
+
+	if engineImage == "" || jarPathInContainer == "" {
+		panic("egnine-version or [engine-image,engine-jar-path-in-container] should be specified")
 	}
 
 	engineConfig := EngineConfig{
@@ -102,4 +119,3 @@ type DeploymentConfig struct {
 	LimitDriverCoreNum int64
 	LimitDriverMemory  int64
 }
-

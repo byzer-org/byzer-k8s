@@ -1,0 +1,37 @@
+package operator
+
+import (
+	"errors"
+	"fmt"
+	"mlsql.tech/allwefantasy/deploy/pkg/meta"
+	"mlsql.tech/allwefantasy/deploy/pkg/op_utils"
+	"mlsql.tech/allwefantasy/deploy/pkg/tpl"
+	"os"
+)
+
+type RoleOp struct {
+	executor   *meta.KubeExecutor
+	metaConfig meta.MetaConfig
+}
+
+func NewRole(executor *meta.KubeExecutor, config meta.MetaConfig) *RoleOp {
+	v := RoleOp{executor: executor, metaConfig: config}
+	return &v
+}
+
+func (v *RoleOp) Execute(verbose bool) error {
+	createRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPCreateRole, tpl.Empty{}, verbose)
+	defer os.Remove(createRoleTmpFile.Name())
+	_, createRoleErr := v.executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})
+	if createRoleErr != nil {
+		return errors.New(fmt.Sprintf("Fail to apply createRole.yaml \n %s", createRoleErr.Error()))
+	}
+
+	bindRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPRoleBinding, tpl.Empty{}, verbose)
+	defer os.Remove(bindRoleTmpFile.Name())
+	_, bindRoleErr := v.executor.CreateDeployment([]string{"-f", bindRoleTmpFile.Name(), "-o", "json"})
+	if bindRoleErr != nil {
+		return errors.New(fmt.Sprintf("Fail to apply roleBinding.yaml \n %s", bindRoleErr.Error()))
+	}
+	return nil
+}
