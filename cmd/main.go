@@ -69,6 +69,7 @@ func main() {
 		Flags:                globalFlags(),
 		Commands: []*cli.Command{
 			runFlags(),
+			deleteFlags(),
 		},
 	}
 
