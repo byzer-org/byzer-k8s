@@ -24,7 +24,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	verbose := false //c.IsSet("verbose") && c.Bool("verbose")
+	verbose := c.IsSet("verbose") && c.Bool("verbose")
 
 	executor := meta.CreateKubeExecutor(&metaConfig.K8sConfig)
 

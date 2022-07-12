@@ -63,19 +63,19 @@ func (v *DeployOp) Execute(verbose bool) error {
 	deployTmpFile, _ := op_utils.TplEvt(tpl.TLPDeployment, de, verbose)
 	defer os.Remove(deployTmpFile.Name())
 
-	deployInfo, deployErr := v.executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
+	_, deployErr := v.executor.CreateDeployment([]string{"-f", deployTmpFile.Name(), "-o", "json"})
 
-	logger.Info(deployInfo)
+	// logger.Info(deployInfo)
 
 	if deployErr != nil {
 		return errors.New(fmt.Sprintf("Fail to apply deployment.yaml \n %s", deployErr.Error()))
 	}
 
 	// Step2: Expose Byzer Engine as Service
-	serviceInfo, serviceErr := v.executor.CreateExpose([]string{"deployment", v.metaConfig.EngineConfig.Name, "--port", "9003",
+	_, serviceErr := v.executor.CreateExpose([]string{"deployment", v.metaConfig.EngineConfig.Name, "--port", "9003",
 		"--target-port", "9003", "--type", "ClusterIP"})
 
-	logger.Info(serviceInfo)
+	// logger.Info(serviceInfo)
 
 	if serviceErr != nil {
 		return errors.New(fmt.Sprintf("Fail to expose service \n %s", serviceErr.Error()))
@@ -85,9 +85,9 @@ func (v *DeployOp) Execute(verbose bool) error {
 	// step2: Create Ingress
 	ingressTmpFile, _ := op_utils.TplEvt(tpl.TLPIngress, de, verbose)
 	defer os.Remove(ingressTmpFile.Name())
-	ingressInfo, ingressErr := v.executor.CreateDeployment([]string{"-f", ingressTmpFile.Name(), "-o", "json"})
+	_, ingressErr := v.executor.CreateDeployment([]string{"-f", ingressTmpFile.Name(), "-o", "json"})
 
-	logger.Info(ingressInfo)
+	//logger.Info(ingressInfo)
 
 	if ingressErr != nil {
 		return errors.New(fmt.Sprintf("Fail to create ingress for %s: %s", de.Name, ingressErr.Error()))
