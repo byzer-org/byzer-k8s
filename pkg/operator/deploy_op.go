@@ -40,20 +40,11 @@ func (v *DeployOp) Execute(verbose bool) error {
 		}
 	}
 
+	v.metaConfig.EngineConfig.ExtraMLSQLConfig = op_utils.ConvertToConfString(v.extraConf, mlsqlConfConverter)
+	v.metaConfig.EngineConfig.ExtraSparkConfig = op_utils.ConvertToConfString(v.extraConf, sparkConfConverter)
+
 	de := meta.DeploymentConfig{
-		EngineConfig: &meta.EngineConfig{
-			Name:               v.metaConfig.EngineConfig.Name,
-			Image:              v.metaConfig.EngineConfig.Image,
-			ExecutorCoreNum:    v.metaConfig.EngineConfig.ExecutorCoreNum,
-			ExecutorNum:        v.metaConfig.EngineConfig.ExecutorNum,
-			ExecutorMemory:     v.metaConfig.EngineConfig.ExecutorMemory,
-			DriverCoreNum:      v.metaConfig.EngineConfig.DriverCoreNum,
-			DriverMemory:       v.metaConfig.EngineConfig.DriverMemory,
-			AccessToken:        v.metaConfig.EngineConfig.AccessToken,
-			JarPathInContainer: v.metaConfig.EngineConfig.JarPathInContainer,
-			ExtraSparkConfig:   op_utils.ConvertToConfString(v.extraConf, sparkConfConverter),
-			ExtraMLSQLConfig:   op_utils.ConvertToConfString(v.extraConf, mlsqlConfConverter),
-		},
+		EngineConfig:       &v.metaConfig.EngineConfig,
 		K8sAddress:         v.executor.GetK8sAddress(),
 		LimitDriverCoreNum: v.metaConfig.EngineConfig.DriverCoreNum * 2,
 		LimitDriverMemory:  v.metaConfig.EngineConfig.DriverMemory * 2,

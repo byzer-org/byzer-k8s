@@ -20,14 +20,17 @@ func NewRole(executor *meta.KubeExecutor, config meta.MetaConfig) *RoleOp {
 }
 
 func (v *RoleOp) Execute(verbose bool) error {
-	createRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPCreateRole, tpl.Empty{}, verbose)
+
+	// create serviceaccount
+
+	createRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPCreateRole, v.metaConfig, verbose)
 	defer os.Remove(createRoleTmpFile.Name())
 	_, createRoleErr := v.executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})
 	if createRoleErr != nil {
 		return errors.New(fmt.Sprintf("Fail to apply createRole.yaml \n %s", createRoleErr.Error()))
 	}
 
-	bindRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPRoleBinding, tpl.Empty{}, verbose)
+	bindRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPRoleBinding, v.metaConfig, verbose)
 	defer os.Remove(bindRoleTmpFile.Name())
 	_, bindRoleErr := v.executor.CreateDeployment([]string{"-f", bindRoleTmpFile.Name(), "-o", "json"})
 	if bindRoleErr != nil {

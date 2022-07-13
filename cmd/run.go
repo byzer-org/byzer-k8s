@@ -70,6 +70,18 @@ func engineFlags() []cli.Flag {
 			Required: false,
 			Usage:    "The name of Byzer Engine",
 		},
+		&cli.StringFlag{
+			Name:     "engine-service-account-name",
+			Required: false,
+			Usage:    "the account name of byzer engine in K8s",
+			Value:    "default",
+		},
+		&cli.StringFlag{
+			Name:     "engine-namespace",
+			Required: false,
+			Usage:    "The namespace Byzer Engine deployed. ",
+			Value:    "default",
+		},
 		&cli.IntFlag{
 			Name:  "engine-executor-core-num",
 			Value: 1,

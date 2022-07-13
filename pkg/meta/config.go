@@ -28,6 +28,9 @@ type EngineConfig struct {
 	DriverCoreNum int64
 	DriverMemory  int64
 
+	Namespace          string
+	ServiceAccountName string
+
 	AccessToken        string
 	JarPathInContainer string
 	ExtraSparkConfig   string
@@ -76,9 +79,13 @@ func BuildEngineConfig(c *cli.Context) EngineConfig {
 	}
 
 	engineConfig := EngineConfig{
-		Name:               c.String("engine-name"),
-		EngineVersion:      engineVersion,
-		Image:              engineImage,
+		Name:          c.String("engine-name"),
+		EngineVersion: engineVersion,
+		Image:         engineImage,
+
+		ServiceAccountName: c.String("engine-service-account-name"),
+		Namespace:          c.String("engine-namespace"),
+
 		ExecutorCoreNum:    c.Int64("engine-executor-core-num"),
 		ExecutorNum:        c.Int64("engine-executor-num"),
 		ExecutorMemory:     c.Int64("engine-executor-memory"),
