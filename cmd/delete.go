@@ -10,16 +10,17 @@ func delete(c *cli.Context) error {
 
 	k8sConfig := meta.BuildKubeConfig(c)
 	engineName := c.String("engine-name")
+	namespace := c.String("engine-namespace")
 
 	metaConfig := meta.MetaConfig{
 		K8sConfig:    k8sConfig,
-		EngineConfig: meta.EngineConfig{Name: engineName},
+		EngineConfig: meta.EngineConfig{Name: engineName, Namespace: namespace},
 	}
 
 	executor := meta.CreateKubeExecutor(&metaConfig.K8sConfig)
 
 	logger.Info(fmt.Sprintf("delete ingress:%s", metaConfig.EngineConfig.Name))
-	executor.DeleteAny([]string{"ingress", metaConfig.EngineConfig.Name})
+	executor.DeleteAny([]string{"ingress", metaConfig.EngineConfig.Name, "--namespace", metaConfig.EngineConfig.Namespace})
 
 	logger.Info(fmt.Sprintf("delete service:%s", metaConfig.EngineConfig.Name))
 	executor.DeleteAny([]string{"service", metaConfig.EngineConfig.Name})
@@ -49,6 +50,12 @@ func deleteFlags() *cli.Command {
 				Name:     "engine-name",
 				Required: true,
 				Usage:    "the engine-name we want to undeploy",
+			},
+			&cli.StringFlag{
+				Name:     "engine-namespace",
+				Required: false,
+				Usage:    "",
+				Value:    "default",
 			},
 		},
 	}

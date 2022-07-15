@@ -4,12 +4,12 @@ metadata:
   name: {{.EngineConfig.Name}}
   namespace: {{.EngineConfig.Namespace}}
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
     - http:
         paths:
-          - path: /{{.EngineConfig.Name}}
+          - path: /{{.EngineConfig.Name}}(/|$)(.*)
             pathType: Prefix
             backend:
               service:
