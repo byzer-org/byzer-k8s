@@ -44,7 +44,7 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 	keyName := fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)
 	v.executor.DeleteAny([]string{"configmap", keyName})
 
-	coreSiteStr := tpl.EvaluateTemplate(tpl.TLPCoreSite,
+	var coreSiteStr = tpl.EvaluateTemplate(tpl.TLPCoreSite,
 		meta.StorageConfig{
 			Name:        v.metaConfig.StorageConfig.Name,
 			MetaUrl:     v.metaConfig.StorageConfig.MetaUrl,
@@ -53,8 +53,8 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 			SecretKey:   v.metaConfig.StorageConfig.SecretKey,
 			ExtraConfig: op_utils.ConvertToConfString(v.extraConf, storageConfConverter),
 		})
-
-	coreSiteDeployFile, _ := op_utils.TplEvt(tpl.TLPCoreSiteDeployment,, RenderConfigMapDeploy{
+	coreSiteStr = strings.ReplaceAll(coreSiteStr, "\n", " ")
+	coreSiteDeployFile, _ := op_utils.TplEvt(tpl.TLPCoreSiteDeployment, RenderConfigMapDeploy{
 		ConfigName: keyName,
 		Namespace:  v.metaConfig.EngineConfig.Namespace,
 		Key:        "core-site.xml",

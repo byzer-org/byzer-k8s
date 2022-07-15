@@ -27,6 +27,9 @@ var (
 
 	//go:embed templates/service.yaml
 	TLPService string
+
+	//go:embed templates/service-account.yaml
+	TLPServiceAccount string
 )
 
 func EvaluateTemplate(templateStr string, data interface{}) string {

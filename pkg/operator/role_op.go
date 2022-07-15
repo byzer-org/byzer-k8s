@@ -23,6 +23,14 @@ func (v *RoleOp) Execute(verbose bool) error {
 
 	// create serviceaccount
 
+	createAccountTmpFile, _ := op_utils.TplEvt(tpl.TLPServiceAccount, v.metaConfig, verbose)
+	defer os.Remove(createAccountTmpFile.Name())
+	_, createAccountErr := v.executor.CreateDeployment([]string{"-f", createAccountTmpFile.Name(), "-o", "json"})
+	if createAccountErr != nil {
+		return errors.New(fmt.Sprintf("Fail to apply createRole.yaml \n %s", createAccountErr.Error()))
+	}
+
+	// create role
 	createRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPCreateRole, v.metaConfig, verbose)
 	defer os.Remove(createRoleTmpFile.Name())
 	_, createRoleErr := v.executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})
@@ -30,6 +38,7 @@ func (v *RoleOp) Execute(verbose bool) error {
 		return errors.New(fmt.Sprintf("Fail to apply createRole.yaml \n %s", createRoleErr.Error()))
 	}
 
+	// create role binding
 	bindRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPRoleBinding, v.metaConfig, verbose)
 	defer os.Remove(bindRoleTmpFile.Name())
 	_, bindRoleErr := v.executor.CreateDeployment([]string{"-f", bindRoleTmpFile.Name(), "-o", "json"})
