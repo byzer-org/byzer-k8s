@@ -8,7 +8,6 @@ import (
 	"mlsql.tech/allwefantasy/deploy/pkg/tpl"
 	"os"
 	"strings"
-	"time"
 )
 
 type DeployOp struct {
@@ -63,8 +62,12 @@ func (v *DeployOp) Execute(verbose bool) error {
 	}
 
 	// Step2: Expose Byzer Engine as Service
-	_, serviceErr := v.executor.CreateExpose([]string{"deployment", v.metaConfig.EngineConfig.Name, "--port", "9003",
-		"--target-port", "9003", "--type", "ClusterIP"})
+	serviceTmpFile, _ := op_utils.TplEvt(tpl.TLPService, de, verbose)
+	defer os.Remove(serviceTmpFile.Name())
+	_, serviceErr := v.executor.CreateDeployment([]string{"-f", serviceTmpFile.Name(), "-o", "json"})
+
+	//_, serviceErr := v.executor.CreateExpose([]string{"deployment", v.metaConfig.EngineConfig.Name, "--port", "9003",
+	//	"--target-port", "9003", "--type", "ClusterIP", "--namespace", v.metaConfig.EngineConfig.Namespace})
 
 	// logger.Info(serviceInfo)
 
@@ -84,16 +87,16 @@ func (v *DeployOp) Execute(verbose bool) error {
 		return errors.New(fmt.Sprintf("Fail to create ingress for %s: %s", de.Name, ingressErr.Error()))
 	}
 
-	// Step4: Wait Byzer Engine proxy service IP ready
-	var ip, _ = v.executor.GetProxyIp()
-	var counter int32 = 30
-	for ip == "" && counter > 0 {
-		time.Sleep(3 * time.Second)
-		logger.Infof("Wait load balance ip ready...")
-		counter -= 3
-		ip, _ = v.executor.GetProxyIp()
-	}
-
-	logger.Infof("Byzer Engine is ready: http://%s:%s", ip, "9003")
+	//// Step4: Wait Byzer Engine proxy service IP ready
+	//var ip, _ = v.executor.GetProxyIp()
+	//var counter int32 = 30
+	//for ip == "" && counter > 0 {
+	//	time.Sleep(3 * time.Second)
+	//	logger.Infof("Wait load balance ip ready...")
+	//	counter -= 3
+	//	ip, _ = v.executor.GetProxyIp()
+	//}
+	//
+	//logger.Infof("Byzer Engine is ready: http://%s:%s", ip, "9003")
 	return nil
 }

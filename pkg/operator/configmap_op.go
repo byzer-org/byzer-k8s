@@ -16,6 +16,13 @@ type ConfigMapOp struct {
 	extraConf  map[string]string
 }
 
+type RenderConfigMapDeploy struct {
+	ConfigName string
+	Namespace  string
+	Key        string
+	Value      string
+}
+
 func NewConfigMapOp(executor *meta.KubeExecutor, config meta.MetaConfig, extraConf map[string]string) *ConfigMapOp {
 	v := ConfigMapOp{executor: executor, metaConfig: config, extraConf: extraConf}
 	return &v
@@ -37,7 +44,7 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 	keyName := fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)
 	v.executor.DeleteAny([]string{"configmap", keyName})
 
-	coreSiteTmpFile, _ := op_utils.TplEvt(tpl.TLPCoreSite,
+	coreSiteStr := tpl.EvaluateTemplate(tpl.TLPCoreSite,
 		meta.StorageConfig{
 			Name:        v.metaConfig.StorageConfig.Name,
 			MetaUrl:     v.metaConfig.StorageConfig.MetaUrl,
@@ -45,13 +52,22 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 			AccessKey:   v.metaConfig.StorageConfig.AccessKey,
 			SecretKey:   v.metaConfig.StorageConfig.SecretKey,
 			ExtraConfig: op_utils.ConvertToConfString(v.extraConf, storageConfConverter),
-		},
-		verbose)
-	defer os.Remove(coreSiteTmpFile.Name())
-	_, coreSiteTmpErr := v.executor.CreateCM([]string{keyName, "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "-o", "json"})
-	if coreSiteTmpErr != nil {
-		logger.Fatalf("Fail to create core-site-xml in cm \n %s", coreSiteTmpErr.Error())
-		return coreSiteTmpErr
+		})
+
+	coreSiteDeployFile, _ := op_utils.TplEvt(tpl.TLPCoreSiteDeployment,, RenderConfigMapDeploy{
+		ConfigName: keyName,
+		Namespace:  v.metaConfig.EngineConfig.Namespace,
+		Key:        "core-site.xml",
+		Value:      coreSiteStr,
+	}, verbose)
+	defer os.Remove(coreSiteDeployFile.Name())
+
+	_, coreSiteDeployErr := v.executor.CreateDeployment([]string{"-f", coreSiteDeployFile.Name(), "-o", "json"})
+
+	//_, coreSiteTmpErr := v.executor.CreateCM([]string{keyName, "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "--namespace", v.metaConfig.EngineConfig.Namespace, "-o", "json"})
+	if coreSiteDeployErr != nil {
+		logger.Fatalf("Fail to create core-site-xml in cm \n %s", coreSiteDeployErr.Error())
+		return coreSiteDeployErr
 	}
 	return nil
 }
