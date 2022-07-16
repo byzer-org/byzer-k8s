@@ -20,7 +20,7 @@ func delete(c *cli.Context) error {
 	executor := meta.CreateKubeExecutor(&metaConfig.K8sConfig)
 
 	logger.Info(fmt.Sprintf("delete ingress:%s", metaConfig.EngineConfig.Name))
-	executor.DeleteAny([]string{"ingress", metaConfig.EngineConfig.Name, "--namespace", metaConfig.EngineConfig.Namespace})
+	executor.DeleteAny([]string{"ingress", metaConfig.EngineConfig.Name})
 
 	logger.Info(fmt.Sprintf("delete service:%s", metaConfig.EngineConfig.Name))
 	executor.DeleteAny([]string{"service", metaConfig.EngineConfig.Name})

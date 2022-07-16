@@ -15,6 +15,7 @@ type MetaConfig struct {
 
 type K8sConfig struct {
 	KubeConfig string
+	Namespace  string
 }
 type EngineConfig struct {
 	Name          string
@@ -43,7 +44,7 @@ func BuildKubeConfig(c *cli.Context) K8sConfig {
 	if err != nil {
 		panic(fmt.Sprintf("load kube config file from %s: %s", kubeConfigPath, err))
 	}
-	k8sConfig := K8sConfig{KubeConfig: string(b)}
+	k8sConfig := K8sConfig{KubeConfig: string(b), Namespace: c.String("engine-namespace")}
 	return k8sConfig
 }
 

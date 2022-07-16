@@ -15,10 +15,11 @@ import (
 	"k8s.io/kubectl/pkg/cmd/expose"
 	"k8s.io/kubectl/pkg/cmd/get"
 	cmdutil "k8s.io/kubectl/pkg/cmd/util"
-	"k8s.io/kubectl/pkg/generate/versioned"
+	"k8s.io/kubectl/pkg/util/completion"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"mlsql.tech/allwefantasy/deploy/pkg/utils"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -34,6 +35,7 @@ func CreateKubeExecutor(kubeConfig *K8sConfig) *KubeExecutor {
 	tmpfile, _ := utils.CreateTmpFile(kubeConfig.KubeConfig)
 	tmpfileName := tmpfile.Name()
 	kubeConfigFlags.KubeConfig = &tmpfileName
+	kubeConfigFlags.Namespace = &kubeConfig.Namespace
 	matchVersionKubeConfigFlags := cmdutil.NewMatchVersionFlags(kubeConfigFlags)
 	f := cmdutil.NewFactory(matchVersionKubeConfigFlags)
 	kubeExecutor := &KubeExecutor{
@@ -78,36 +80,34 @@ func (executor *KubeExecutor) GetInfo(command []string) (string, error) {
 }
 
 func (executor *KubeExecutor) newCreateCM(ioStreams genericclioptions.IOStreams) *cobra.Command {
-	options := &create.ConfigMapOpts{
-		CreateSubcommandOptions: create.NewCreateSubcommandOptions(ioStreams),
-	}
+	o := create.NewConfigMapOptions(ioStreams)
 
 	cmd := &cobra.Command{
 		Use:                   "configmap NAME [--from-file=[key=]source] [--from-literal=key1=value1] [--dry-run=server|client|none]",
 		DisableFlagsInUseLine: true,
 		Aliases:               []string{"cm"},
-		Short:                 i18n.T("Create a configmap from a local file, directory or literal value"),
-		Long:                  "configMapLong",
-		Example:               "configMapExample",
+		Short:                 i18n.T("Create a config map from a local file, directory or literal value"),
+		Long:                  "",
+		Example:               "",
 		Run: func(cmd *cobra.Command, args []string) {
-			options.Complete(executor.KubeFactory, cmd, args)
-			err2 := options.Run()
-
-			if err2 != nil {
-				cmd.PrintErr(err2.Error())
-			}
+			cmdutil.CheckErr(o.Complete(executor.KubeFactory, cmd, args))
+			cmdutil.CheckErr(o.Validate())
+			cmdutil.CheckErr(o.Run())
 		},
 	}
+	o.PrintFlags.AddFlags(cmd)
 
-	options.CreateSubcommandOptions.PrintFlags.AddFlags(cmd)
 	cmdutil.AddApplyAnnotationFlags(cmd)
 	cmdutil.AddValidateFlags(cmd)
-	cmdutil.AddGeneratorFlags(cmd, versioned.ConfigMapV1GeneratorName)
-	cmd.Flags().StringSlice("from-file", []string{}, "Key file can be specified using its file path, in which case file basename will be used as configmap key, or optionally with a key and file path, in which case the given key will be used.  Specifying a directory will iterate each named file in the directory whose basename is a valid configmap key.")
-	cmd.Flags().StringArray("from-literal", []string{}, "Specify a key and literal value to insert in configmap (i.e. mykey=somevalue)")
-	cmd.Flags().String("from-env-file", "", "Specify the path to a file to read lines of key=val pairs to create a configmap (i.e. a Docker .env file).")
-	cmd.Flags().Bool("append-hash", false, "Append a hash of the configmap to its name.")
-	cmdutil.AddFieldManagerFlagVar(cmd, &options.CreateSubcommandOptions.FieldManager, "kubectl-create")
+	cmdutil.AddDryRunFlag(cmd)
+
+	cmd.Flags().StringSliceVar(&o.FileSources, "from-file", o.FileSources, "Key file can be specified using its file path, in which case file basename will be used as configmap key, or optionally with a key and file path, in which case the given key will be used.  Specifying a directory will iterate each named file in the directory whose basename is a valid configmap key.")
+	cmd.Flags().StringArrayVar(&o.LiteralSources, "from-literal", o.LiteralSources, "Specify a key and literal value to insert in configmap (i.e. mykey=somevalue)")
+	cmd.Flags().StringSliceVar(&o.EnvFileSources, "from-env-file", o.EnvFileSources, "Specify the path to a file to read lines of key=val pairs to create a configmap.")
+	cmd.Flags().BoolVar(&o.AppendHash, "append-hash", o.AppendHash, "Append a hash of the configmap to its name.")
+
+	cmdutil.AddFieldManagerFlagVar(cmd, &o.FieldManager, "kubectl-create")
+
 	return cmd
 }
 
@@ -201,92 +201,71 @@ func (executor *KubeExecutor) CreateCM(command []string) (string, error) {
 }
 
 func (executor *KubeExecutor) newCmdApply(ioStreams genericclioptions.IOStreams) *cobra.Command {
-	o := apply.NewApplyOptions(ioStreams)
-
-	// Store baseName for use in printing warnings / messages involving the base command name.
-	// This is useful for downstream command that wrap this one.
-	// o.cmdBaseName = baseName
+	flags := apply.NewApplyFlags(executor.KubeFactory, ioStreams)
 
 	cmd := &cobra.Command{
 		Use:                   "apply (-f FILENAME | -k DIRECTORY)",
 		DisableFlagsInUseLine: true,
-		Short:                 i18n.T("Apply a configuration to a resource by filename or stdin"),
+		Short:                 i18n.T("Apply a configuration to a resource by file name or stdin"),
 		Long:                  "",
 		Example:               "",
 		Run: func(cmd *cobra.Command, args []string) {
-			o.Complete(executor.KubeFactory, cmd)
-			// cmdutil.CheckErr(apply.validateArgs(cmd, args))
-			// cmdutil.CheckErr(apply.validatePruneAll(o.Prune, o.All, o.Selector))
-			err2 := o.Run()
-
-			if err2 != nil {
-				cmd.PrintErr(err2.Error())
-			}
+			o, err := flags.ToOptions(cmd, "", args)
+			cmdutil.CheckErr(err)
+			cmdutil.CheckErr(o.Validate(cmd, args))
+			cmdutil.CheckErr(o.Run())
 		},
 	}
-	cmd.SetIn(ioStreams.In)
-	cmd.SetOut(ioStreams.Out)
-	cmd.SetErr(ioStreams.ErrOut)
 
-	// bind flag structs
-	o.DeleteFlags.AddFlags(cmd)
-	o.RecordFlags.AddFlags(cmd)
-	o.PrintFlags.AddFlags(cmd)
+	flags.AddFlags(cmd)
 
-	cmd.Flags().BoolVar(&o.Overwrite, "overwrite", o.Overwrite, "Automatically resolve conflicts between the modified and live configuration by using values from the modified configuration")
-	cmd.Flags().BoolVar(&o.Prune, "prune", o.Prune, "Automatically delete resource objects, including the uninitialized ones, that do not appear in the configs and are created by either apply or create --save-config. Should be used with either -l or --all.")
-	cmdutil.AddValidateFlags(cmd)
-	cmd.Flags().StringVarP(&o.Selector, "selector", "l", o.Selector, "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)")
-	cmd.Flags().BoolVar(&o.All, "all", o.All, "Select all resources in the namespace of the specified resource types.")
-	cmd.Flags().StringArrayVar(&o.PruneWhitelist, "prune-whitelist", o.PruneWhitelist, "Overwrite the default whitelist with <group/version/kind> for --prune")
-	cmd.Flags().BoolVar(&o.OpenAPIPatch, "openapi-patch", o.OpenAPIPatch, "If true, use openapi to calculate diff when the openapi presents and the resource can be found in the openapi spec. Otherwise, fall back to use baked-in types.")
-	cmdutil.AddDryRunFlag(cmd)
-	cmdutil.AddServerSideApplyFlags(cmd)
-	cmdutil.AddFieldManagerFlagVar(cmd, &o.FieldManager, apply.FieldManagerClientSideApply)
+	// apply subcommands
+	cmd.AddCommand(apply.NewCmdApplyViewLastApplied(flags.Factory, flags.IOStreams))
+	cmd.AddCommand(apply.NewCmdApplySetLastApplied(flags.Factory, flags.IOStreams))
+	cmd.AddCommand(apply.NewCmdApplyEditLastApplied(flags.Factory, flags.IOStreams))
 
 	return cmd
 }
 
 func (executor *KubeExecutor) newExposeService(ioStreams genericclioptions.IOStreams) *cobra.Command {
 	o := expose.NewExposeServiceOptions(ioStreams)
-
+	exposeResources := i18n.T(`pod (po), service (svc), replicationcontroller (rc), deployment (deploy), replicaset (rs)`)
 	validArgs := []string{}
+	resources := regexp.MustCompile(`\s*,`).Split(exposeResources, -1)
+	for _, r := range resources {
+		validArgs = append(validArgs, strings.Fields(r)[0])
+	}
 
 	cmd := &cobra.Command{
 		Use:                   "expose (-f FILENAME | TYPE NAME) [--port=port] [--protocol=TCP|UDP|SCTP] [--target-port=number-or-name] [--name=name] [--external-ip=external-ip-of-service] [--type=type]",
 		DisableFlagsInUseLine: true,
-		Short:                 i18n.T("Take a replication controller, service, deployment or pod and expose it as a new Kubernetes Service"),
+		Short:                 i18n.T("Take a replication controller, service, deployment or pod and expose it as a new Kubernetes service"),
 		Long:                  "",
 		Example:               "",
+		ValidArgsFunction:     completion.SpecifiedResourceTypeAndNameCompletionFunc(executor.KubeFactory, validArgs),
 		Run: func(cmd *cobra.Command, args []string) {
-			o.Complete(executor.KubeFactory, cmd)
-			err2 := o.RunExpose(cmd, args)
-			if err2 != nil {
-				cmd.PrintErr(err2.Error())
-			}
+			cmdutil.CheckErr(o.Complete(executor.KubeFactory, cmd))
+			cmdutil.CheckErr(o.RunExpose(cmd, args))
 		},
-		ValidArgs: validArgs,
 	}
 
 	o.RecordFlags.AddFlags(cmd)
 	o.PrintFlags.AddFlags(cmd)
 
-	cmd.Flags().String("generator", "service/v2", i18n.T("The name of the API generator to use. There are 2 generators: 'service/v1' and 'service/v2'. The only difference between them is that service port in v1 is named 'default', while it is left unnamed in v2. Default is 'service/v2'."))
-	cmd.Flags().String("protocol", "", i18n.T("The network protocol for the service to be created. Default is 'TCP'."))
-	cmd.Flags().String("port", "", i18n.T("The port that the service should serve on. Copied from the resource being exposed, if unspecified"))
-	cmd.Flags().String("type", "", i18n.T("Type for this service: ClusterIP, NodePort, LoadBalancer, or ExternalName. Default is 'ClusterIP'."))
-	cmd.Flags().String("load-balancer-ip", "", i18n.T("IP to assign to the LoadBalancer. If empty, an ephemeral IP will be created and used (cloud-provider specific)."))
-	cmd.Flags().String("selector", "", i18n.T("A label selector to use for this service. Only equality-based selector requirements are supported. If empty (the default) infer the selector from the replication controller or replica set.)"))
-	cmd.Flags().StringP("labels", "l", "", "Labels to apply to the service created by this call.")
-	cmd.Flags().String("container-port", "", i18n.T("Synonym for --target-port"))
-	cmd.Flags().MarkDeprecated("container-port", "--container-port will be removed in the future, please use --target-port instead")
-	cmd.Flags().String("target-port", "", i18n.T("Name or number for the port on the container that the service should direct traffic to. Optional."))
-	cmd.Flags().String("external-ip", "", i18n.T("Additional external IP address (not managed by Kubernetes) to accept for the service. If this IP is routed to a node, the service can be accessed by this IP in addition to its generated service IP."))
-	cmd.Flags().String("overrides", "", i18n.T("An inline JSON override for the generated object. If this is non-empty, it is used to override the generated object. Requires that the object supply a valid apiVersion field."))
-	cmd.Flags().String("name", "", i18n.T("The name for the newly created object."))
-	cmd.Flags().String("session-affinity", "", i18n.T("If non-empty, set the session affinity for the service to this; legal values: 'None', 'ClientIP'"))
-	cmd.Flags().String("cluster-ip", "", i18n.T("ClusterIP to be assigned to the service. Leave empty to auto-allocate, or set to 'None' to create a headless service."))
-	//cmdutil.AddFieldManagerFlagVar(cmd, &o.fieldManager, "kubectl-expose")
+	cmd.Flags().StringVar(&o.Protocol, "protocol", o.Protocol, i18n.T("The network protocol for the service to be created. Default is 'TCP'."))
+	cmd.Flags().StringVar(&o.Port, "port", o.Port, i18n.T("The port that the service should serve on. Copied from the resource being exposed, if unspecified"))
+	cmd.Flags().StringVar(&o.Type, "type", o.Type, i18n.T("Type for this service: ClusterIP, NodePort, LoadBalancer, or ExternalName. Default is 'ClusterIP'."))
+	cmd.Flags().StringVar(&o.LoadBalancerIP, "load-balancer-ip", o.LoadBalancerIP, i18n.T("IP to assign to the LoadBalancer. If empty, an ephemeral IP will be created and used (cloud-provider specific)."))
+	cmd.Flags().StringVar(&o.Selector, "selector", o.Selector, i18n.T("A label selector to use for this service. Only equality-based selector requirements are supported. If empty (the default) infer the selector from the replication controller or replica set.)"))
+	cmd.Flags().StringVarP(&o.Labels, "labels", "l", o.Labels, "Labels to apply to the service created by this call.")
+	cmd.Flags().StringVar(&o.TargetPort, "target-port", o.TargetPort, i18n.T("Name or number for the port on the container that the service should direct traffic to. Optional."))
+	cmd.Flags().StringVar(&o.ExternalIP, "external-ip", o.ExternalIP, i18n.T("Additional external IP address (not managed by Kubernetes) to accept for the service. If this IP is routed to a node, the service can be accessed by this IP in addition to its generated service IP."))
+	cmd.Flags().StringVar(&o.Name, "name", o.Name, i18n.T("The name for the newly created object."))
+	cmd.Flags().StringVar(&o.SessionAffinity, "session-affinity", o.SessionAffinity, i18n.T("If non-empty, set the session affinity for the service to this; legal values: 'None', 'ClientIP'"))
+	cmd.Flags().StringVar(&o.ClusterIP, "cluster-ip", o.ClusterIP, i18n.T("ClusterIP to be assigned to the service. Leave empty to auto-allocate, or set to 'None' to create a headless service."))
+	//cmdutil.AddFieldManagerFlagVar(cmd,v, "kubectl-expose")
+	o.AddOverrideFlags(cmd)
+
 	usage := "identifying the resource to expose a service"
 	cmdutil.AddFilenameOptionFlags(cmd, &o.FilenameOptions, usage)
 	cmdutil.AddDryRunFlag(cmd)
@@ -300,16 +279,16 @@ func (executor *KubeExecutor) newCmdDelete(streams genericclioptions.IOStreams) 
 	cmd := &cobra.Command{
 		Use:                   "delete ([-f FILENAME] | [-k DIRECTORY] | TYPE [(NAME | -l label | --all)])",
 		DisableFlagsInUseLine: true,
-		Short:                 i18n.T("Delete resources by filenames, stdin, resources and names, or by resources and label selector"),
+		Short:                 i18n.T("Delete resources by file names, stdin, resources and names, or by resources and label selector"),
 		Long:                  "",
 		Example:               "",
+		ValidArgsFunction:     completion.ResourceTypeAndNameCompletionFunc(executor.KubeFactory),
 		Run: func(cmd *cobra.Command, args []string) {
-			o := deleteFlags.ToOptions(nil, streams)
-			o.Complete(executor.KubeFactory, args, cmd)
-			err2 := o.RunDelete(executor.KubeFactory)
-			if err2 != nil {
-				cmd.PrintErr(err2.Error())
-			}
+			o, err := deleteFlags.ToOptions(nil, streams)
+			cmdutil.CheckErr(err)
+			cmdutil.CheckErr(o.Complete(executor.KubeFactory, args, cmd))
+			cmdutil.CheckErr(o.Validate())
+			cmdutil.CheckErr(o.RunDelete(executor.KubeFactory))
 		},
 		SuggestFor: []string{"rm"},
 	}
@@ -321,20 +300,19 @@ func (executor *KubeExecutor) newCmdDelete(streams genericclioptions.IOStreams) 
 }
 
 func (executor *KubeExecutor) newGetCmd(ioStreams genericclioptions.IOStreams) *cobra.Command {
-	o := get.NewGetOptions("kubectl", ioStreams)
+	o := get.NewGetOptions("", ioStreams)
 
 	cmd := &cobra.Command{
-		Use:                   "get [(-o|--output=)json|yaml|wide|custom-columns=...|custom-columns-file=...|go-template=...|go-template-file=...|jsonpath=...|jsonpath-file=...] (TYPE[.VERSION][.GROUP] [NAME | -l label] | TYPE[.VERSION][.GROUP]/NAME ...) [flags]",
+		Use:                   fmt.Sprintf("get [(-o|--output=)%s] (TYPE[.VERSION][.GROUP] [NAME | -l label] | TYPE[.VERSION][.GROUP]/NAME ...) [flags]", strings.Join(o.PrintFlags.AllowedFormats(), "|")),
 		DisableFlagsInUseLine: true,
 		Short:                 i18n.T("Display one or many resources"),
 		Long:                  "",
 		Example:               "",
+		// ValidArgsFunction is set when this function is called so that we have access to the util package
 		Run: func(cmd *cobra.Command, args []string) {
-			o.Complete(executor.KubeFactory, cmd, args)
-			err2 := o.Run(executor.KubeFactory, cmd, args)
-			if err2 != nil {
-				cmd.PrintErr(err2.Error())
-			}
+			cmdutil.CheckErr(o.Complete(executor.KubeFactory, cmd, args))
+			cmdutil.CheckErr(o.Validate(cmd))
+			cmdutil.CheckErr(o.Run(executor.KubeFactory, cmd, args))
 		},
 		SuggestFor: []string{"list", "ps"},
 	}
@@ -342,14 +320,18 @@ func (executor *KubeExecutor) newGetCmd(ioStreams genericclioptions.IOStreams) *
 	o.PrintFlags.AddFlags(cmd)
 
 	cmd.Flags().StringVar(&o.Raw, "raw", o.Raw, "Raw URI to request from the server.  Uses the transport specified by the kubeconfig file.")
-	cmd.Flags().BoolVarP(&o.Watch, "watch", "w", o.Watch, "After listing/getting the requested object, watch for changes. Uninitialized objects are excluded if no object name is provided.")
+	cmd.Flags().BoolVarP(&o.Watch, "watch", "w", o.Watch, "After listing/getting the requested object, watch for changes.")
 	cmd.Flags().BoolVar(&o.WatchOnly, "watch-only", o.WatchOnly, "Watch for changes to the requested object(s), without listing/getting first.")
 	cmd.Flags().BoolVar(&o.OutputWatchEvents, "output-watch-events", o.OutputWatchEvents, "Output watch event objects when --watch or --watch-only is used. Existing objects are output as initial ADDED events.")
-	cmd.Flags().Int64Var(&o.ChunkSize, "chunk-size", o.ChunkSize, "Return large lists in chunks rather than all at once. Pass 0 to disable. This flag is beta and may change in the future.")
 	cmd.Flags().BoolVar(&o.IgnoreNotFound, "ignore-not-found", o.IgnoreNotFound, "If the requested object does not exist the command will return exit code 0.")
-	cmd.Flags().StringVarP(&o.LabelSelector, "selector", "l", o.LabelSelector, "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)")
 	cmd.Flags().StringVar(&o.FieldSelector, "field-selector", o.FieldSelector, "Selector (field query) to filter on, supports '=', '==', and '!='.(e.g. --field-selector key1=value1,key2=value2). The server only supports a limited number of field queries per type.")
 	cmd.Flags().BoolVarP(&o.AllNamespaces, "all-namespaces", "A", o.AllNamespaces, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	//get.addOpenAPIPrintColumnFlags(cmd, o)
+	//get.addServerPrintColumnFlags(cmd, o)
 	cmdutil.AddFilenameOptionFlags(cmd, &o.FilenameOptions, "identifying the resource to get from a server.")
+	cmdutil.AddChunkSizeFlag(cmd, &o.ChunkSize)
+	cmdutil.AddLabelSelectorFlagVar(cmd, &o.LabelSelector)
+	var supportedSubresources = []string{"status", "scale"}
+	cmdutil.AddSubresourceFlags(cmd, &o.Subresource, "If specified, gets the subresource of the requested object.", supportedSubresources...)
 	return cmd
 }
