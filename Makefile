@@ -23,7 +23,7 @@ endif
 release: linux mac
 
 linux: Makefile cmd/*.go pkg/*/*.go
-	env GOOS=linux GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzer-k8s-linux-amd64 ./cmd
+	env GOOS=linux GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzerup-linux-amd64 ./cmd
 
 mac:
-	env GOOS=darwin GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzer-k8s-darwin-amd64 ./cmd
+	env GOOS=darwin GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzerup-darwin-amd64 ./cmd

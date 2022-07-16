@@ -42,7 +42,7 @@ func storageConfConverter(key, value string) string {
 
 func (v *ConfigMapOp) Execute(verbose bool) error {
 	keyName := fmt.Sprintf("%s-core-site-xml", v.metaConfig.EngineConfig.Name)
-	v.executor.DeleteAny([]string{"configmap", keyName})
+	//v.executor.DeleteAny([]string{"configmap", keyName})
 
 	var coreSiteStr = tpl.EvaluateTemplate(tpl.TLPCoreSite,
 		meta.StorageConfig{

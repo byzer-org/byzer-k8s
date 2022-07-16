@@ -31,6 +31,8 @@ type EngineConfig struct {
 
 	Namespace          string
 	ServiceAccountName string
+	RoleName           string
+	RoleBindingName    string
 
 	AccessToken        string
 	JarPathInContainer string
@@ -86,6 +88,8 @@ func BuildEngineConfig(c *cli.Context) EngineConfig {
 
 		ServiceAccountName: c.String("engine-service-account-name"),
 		Namespace:          c.String("engine-namespace"),
+		RoleName:           c.String("engine-role-name"),
+		RoleBindingName:    c.String("engine-role-binding-name"),
 
 		ExecutorCoreNum:    c.Int64("engine-executor-core-num"),
 		ExecutorNum:        c.Int64("engine-executor-num"),

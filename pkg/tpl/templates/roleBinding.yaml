@@ -1,14 +1,14 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: byzer-role-binding
+  name: {{.EngineConfig.RoleBindingName}}
   namespace: {{.EngineConfig.Namespace}}
   labels:
-    from: byzer-role
+    from: {{.EngineConfig.RoleName}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: byzer-role
+  name: {{.EngineConfig.RoleName}}
 subjects:
 - kind: ServiceAccount
   name: {{.EngineConfig.ServiceAccountName}}

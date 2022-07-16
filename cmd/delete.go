@@ -31,6 +31,9 @@ func delete(c *cli.Context) error {
 	logger.Info(fmt.Sprintf("delete configmap:%s", fmt.Sprintf("%s-core-site-xml", metaConfig.EngineConfig.Name)))
 	executor.DeleteAny([]string{"configmap", fmt.Sprintf("%s-core-site-xml", metaConfig.EngineConfig.Name)})
 
+	// clean executor pods
+	//executor.DeleteAny([]string{"pods", "-l", fmt.Sprintf("app=%s", metaConfig.EngineConfig.Name)})
+
 	return nil
 }
 
