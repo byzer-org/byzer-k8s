@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"mlsql.tech/allwefantasy/deploy/pkg/meta"
+	"mlsql.tech/allwefantasy/deploy/pkg/utils"
 )
 
 func delete(c *cli.Context) error {
@@ -32,7 +33,18 @@ func delete(c *cli.Context) error {
 	executor.DeleteAny([]string{"configmap", fmt.Sprintf("%s-core-site-xml", metaConfig.EngineConfig.Name)})
 
 	// clean executor pods
-	//executor.DeleteAny([]string{"pods", "-l", fmt.Sprintf("app=%s", metaConfig.EngineConfig.Name)})
+	podsJson, _ := executor.GetInfo([]string{"pods", "-o", "json"})
+	query := utils.BuildJsonQueryFromStr(podsJson)
+	items, _ := query.Array("items")
+	var podNames = make([]string, 1)
+	for _, item := range items {
+		podNames = append(podNames, item("metadata", "name").(string))
+	}
+
+	for _, podName := range podNames {
+		logger.Info(fmt.Sprintf("delete pod:%s", podName))
+		executor.DeleteAny([]string{"pods", podName})
+	}
 
 	return nil
 }
