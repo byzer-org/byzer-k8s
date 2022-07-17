@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"mlsql.tech/allwefantasy/deploy/pkg/meta"
 	"mlsql.tech/allwefantasy/deploy/pkg/utils"
+	"strings"
 )
 
 func delete(c *cli.Context) error {
@@ -43,8 +44,11 @@ func delete(c *cli.Context) error {
 	}
 
 	for _, podName := range podNames {
-		logger.Info(fmt.Sprintf("delete pod:%s", podName))
-		executor.DeleteAny([]string{"pods", podName})
+		if strings.HasPrefix(podName, metaConfig.EngineConfig.Name) && strings.Contains(podName, "exec") {
+			logger.Info(fmt.Sprintf("delete pod:%s", podName))
+			executor.DeleteAny([]string{"pod", podName})
+		}
+
 	}
 
 	return nil
