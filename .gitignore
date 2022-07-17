@@ -22,3 +22,5 @@ byzer-k8s-deploy
 .engine.config
 byzer-k8s-darwin-amd64
 byzer-k8s-linux-amd64
+byzerup-darwin-amd64
+byzerup-linux-amd64

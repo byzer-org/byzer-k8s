@@ -36,9 +36,10 @@ func delete(c *cli.Context) error {
 	podsJson, _ := executor.GetInfo([]string{"pods", "-o", "json"})
 	query := utils.BuildJsonQueryFromStr(podsJson)
 	items, _ := query.Array("items")
-	var podNames = make([]string, 1)
+	var podNames = make([]string, 0)
 	for _, item := range items {
-		podNames = append(podNames, item("metadata", "name").(string))
+		v := item.(map[string]interface{})["metadata"].(map[string]interface{})["name"].(string)
+		podNames = append(podNames, v)
 	}
 
 	for _, podName := range podNames {
