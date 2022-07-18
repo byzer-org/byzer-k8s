@@ -22,7 +22,7 @@ func NewRole(executor *meta.KubeExecutor, config meta.MetaConfig) *RoleOp {
 func (v *RoleOp) Execute(verbose bool) error {
 
 	// create serviceaccount
-
+	logger.Info(fmt.Sprintf("Create service account :%s", v.metaConfig.EngineConfig.ServiceAccountName))
 	createAccountTmpFile, _ := op_utils.TplEvt(tpl.TLPServiceAccount, v.metaConfig, verbose)
 	defer os.Remove(createAccountTmpFile.Name())
 	_, createAccountErr := v.executor.CreateDeployment([]string{"-f", createAccountTmpFile.Name(), "-o", "json"})
@@ -31,6 +31,7 @@ func (v *RoleOp) Execute(verbose bool) error {
 	}
 
 	// create role
+	logger.Info(fmt.Sprintf("Create role :%s with binding %s", v.metaConfig.EngineConfig.RoleName, v.metaConfig.EngineConfig.RoleBindingName))
 	createRoleTmpFile, _ := op_utils.TplEvt(tpl.TLPCreateRole, v.metaConfig, verbose)
 	defer os.Remove(createRoleTmpFile.Name())
 	_, createRoleErr := v.executor.CreateDeployment([]string{"-f", createRoleTmpFile.Name(), "-o", "json"})

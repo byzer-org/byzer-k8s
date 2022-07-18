@@ -50,6 +50,7 @@ func (v *DeployOp) Execute(verbose bool) error {
 	}
 
 	// Step1: Deploy byzer engine to K8s
+	logger.Info("Deploy Byzer in K8s")
 	deployTmpFile, _ := op_utils.TplEvt(tpl.TLPDeployment, de, verbose)
 	defer os.Remove(deployTmpFile.Name())
 
@@ -62,6 +63,7 @@ func (v *DeployOp) Execute(verbose bool) error {
 	}
 
 	// Step2: Expose Byzer Engine as Service
+	logger.Info("Expose Byzer as service")
 	serviceTmpFile, _ := op_utils.TplEvt(tpl.TLPService, de, verbose)
 	defer os.Remove(serviceTmpFile.Name())
 	_, serviceErr := v.executor.CreateDeployment([]string{"-f", serviceTmpFile.Name(), "-o", "json"})
@@ -77,6 +79,7 @@ func (v *DeployOp) Execute(verbose bool) error {
 	}
 
 	// step2: Create Ingress
+	logger.Info("Expose Byzer as Ingress")
 	ingressTmpFile, _ := op_utils.TplEvt(tpl.TLPIngress, de, verbose)
 	defer os.Remove(ingressTmpFile.Name())
 	_, ingressErr := v.executor.CreateDeployment([]string{"-f", ingressTmpFile.Name(), "-o", "json"})
