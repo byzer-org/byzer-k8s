@@ -61,7 +61,7 @@ func (v *ConfigMapOp) Execute(verbose bool) error {
 		Value:      coreSiteStr,
 	}, verbose)
 	defer os.Remove(coreSiteDeployFile.Name())
-
+	logger.Info(fmt.Sprintf("Create configmap [%s]", keyName))
 	_, coreSiteDeployErr := v.executor.CreateDeployment([]string{"-f", coreSiteDeployFile.Name(), "-o", "json"})
 
 	//_, coreSiteTmpErr := v.executor.CreateCM([]string{keyName, "--from-file", "core-site.xml=" + coreSiteTmpFile.Name(), "--namespace", v.metaConfig.EngineConfig.Namespace, "-o", "json"})
