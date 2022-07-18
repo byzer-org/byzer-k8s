@@ -22,11 +22,11 @@ type EngineConfig struct {
 	Image         string
 	EngineVersion string
 
-	ExecutorCoreNum int64
+	ExecutorCoreNum float64
 	ExecutorNum     int64
 	ExecutorMemory  int64
 
-	DriverCoreNum int64
+	DriverCoreNum float64
 	DriverMemory  int64
 
 	Namespace          string
@@ -91,10 +91,10 @@ func BuildEngineConfig(c *cli.Context) EngineConfig {
 		RoleName:           c.String("engine-role-name"),
 		RoleBindingName:    c.String("engine-role-binding-name"),
 
-		ExecutorCoreNum:    c.Int64("engine-executor-core-num"),
+		ExecutorCoreNum:    c.Float64("engine-executor-core-num"),
 		ExecutorNum:        c.Int64("engine-executor-num"),
 		ExecutorMemory:     c.Int64("engine-executor-memory"),
-		DriverCoreNum:      c.Int64("engine-driver-core-num"),
+		DriverCoreNum:      c.Float64("engine-driver-core-num"),
 		DriverMemory:       c.Int64("engine-driver-memory"),
 		AccessToken:        c.String("engine-access-token"),
 		JarPathInContainer: jarPathInContainer,
@@ -128,6 +128,6 @@ func BuildStorageConfig(c *cli.Context) StorageConfig {
 type DeploymentConfig struct {
 	*EngineConfig
 	K8sAddress         string
-	LimitDriverCoreNum int64
+	LimitDriverCoreNum float64
 	LimitDriverMemory  int64
 }

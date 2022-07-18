@@ -28,12 +28,12 @@ spec:
             echo "/work/spark-3.1.1-bin-hadoop3.2/bin/spark-submit
             --master k8s://{{.K8sAddress}}
             --deploy-mode client
-            --driver-memory {{.EngineConfig.DriverMemory}}m
-            --driver-cores  {{.EngineConfig.DriverCoreNum}}
-            --executor-memory {{.EngineConfig.ExecutorMemory}}m
-            --executor-cores {{.EngineConfig.ExecutorCoreNum}}
+            --driver-memory {{.EngineConfig.DriverMemory}}m            
+            --executor-memory {{.EngineConfig.ExecutorMemory}}m            
             --driver-class-path /home/deploy/byzer-lang/libs/juicefs-hadoop-0.17.5-linux-amd64.jar:/home/deploy/byzer-lang/libs/ansj_seg-5.1.6.jar:/home/deploy/byzer-lang/libs/nlp-lang-1.7.8.jar:/home/deploy/byzer-lang/plugin/mlsql-assert-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/mlsql-excel-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-ext-ets-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-shell-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-mllib-3.0_2.12-0.1.0-SNAPSHOT.jar
             --class streaming.core.StreamingApp
+            --conf spark.kubernetes.driver.request.cores={{.EngineConfig.DriverCoreNum}}
+            --conf spark.kubernetes.executor.request.cores={{.EngineConfig.ExecutorCoreNum}}
             --conf spark.executor.extraClassPath=/home/deploy/byzer-lang/libs/juicefs-hadoop-0.17.5-linux-amd64.jar:/home/deploy/byzer-lang/libs/ansj_seg-5.1.6.jar:/home/deploy/byzer-lang/libs/nlp-lang-1.7.8.jar:/home/deploy/byzer-lang/plugin/mlsql-assert-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/mlsql-excel-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-ext-ets-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-shell-3.0_2.12-0.1.0-SNAPSHOT.jar:/home/deploy/byzer-lang/plugin/mlsql-mllib-3.0_2.12-0.1.0-SNAPSHOT.jar
             --conf spark.kubernetes.container.image={{.EngineConfig.Image}}
             --conf spark.kubernetes.namespace={{.EngineConfig.Namespace}}

@@ -94,7 +94,7 @@ func engineFlags() []cli.Flag {
 			Usage:    "The namespace Byzer Engine deployed. ",
 			Value:    "default",
 		},
-		&cli.IntFlag{
+		&cli.Float64Flag{
 			Name:  "engine-executor-core-num",
 			Value: 1,
 			Usage: "the core num of every executor",
@@ -116,7 +116,7 @@ func engineFlags() []cli.Flag {
 			Value: 1024,
 			Usage: "memory size for driver in MB",
 		},
-		&cli.IntFlag{
+		&cli.Float64Flag{
 			Name:  "engine-driver-core-num",
 			Value: 4,
 			Usage: "the core num of driver",
