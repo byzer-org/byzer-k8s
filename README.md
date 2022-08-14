@@ -43,7 +43,7 @@ docker run -d --name minio \
  
 ```
 
-Login [MinIO cosnole](http://127.0.0.1:9001/) and create a bucket named jfs
+Login [MinIO cosnole](http://127.0.0.1:9001/) and create a bucket named `byjfs`
 
 ### Meta Storage Setup
 
