@@ -57,7 +57,7 @@ Please note that MySQL/SQLite is supported as well.
 
 ### JuiceFS Initialization
 
-Please download and untar [JuiceFS 0.15.2](https://github.com/juicedata/juicefs/releases/tag/v0.15.2), then run the
+Please download and untar [JuiceFS 0.17.5](https://github.com/juicedata/juicefs/releases/tag/v0.17.5), then run the
 following
 command:
 
