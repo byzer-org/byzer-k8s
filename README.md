@@ -69,7 +69,7 @@ juicefs --version
 ## Format JuiceFS
 juicefs format \
   --storage minio \
-  --bucket http://127.0.0.1:9000/jfs \
+  --bucket http://127.0.0.1:9000/byjfs \
   --access-key minioadmin \
   --secret-key minioadmin \
   redis://127.0.0.1:6379/1 \
