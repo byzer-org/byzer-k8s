@@ -3,6 +3,10 @@
 
 <configuration>
     <property>
+        <name>fs.defaultFS</name>
+        <value>jfs://{{.Name}}/</value>
+    </property>
+    <property>
         <name>fs.jfs.impl</name>
         <value>io.juicefs.JuiceFileSystem</value>
     </property>

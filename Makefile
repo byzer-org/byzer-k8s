@@ -1,6 +1,6 @@
 export GO111MODULE=on
 
-all: byzer-k8s-deploy
+all: release
 
 REVISION := $(shell git rev-parse --short HEAD 2>/dev/null)
 REVISIONDATE := $(shell git log -1 --pretty=format:'%ad' --date short 2>/dev/null)
@@ -19,5 +19,11 @@ ifdef STATIC
 	export CC
 endif
 
-byzer-k8s-deploy: Makefile cmd/*.go pkg/*/*.go
-	go build -ldflags="$(LDFLAGS)"  -o byzer-k8s-deploy ./cmd
+
+release: linux mac
+
+linux: Makefile cmd/*.go pkg/*/*.go
+	env GOOS=linux GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzerup-linux-amd64 ./cmd
+
+mac:
+	env GOOS=darwin GOARCH=amd64  go build -ldflags="$(LDFLAGS)"  -o byzerup-darwin-amd64 ./cmd
